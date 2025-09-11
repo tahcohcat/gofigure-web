@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
+	"google.golang.org/api/option"
 	tts "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"github.com/tahcohcat/gofigure-web/internal/logger"
 )
@@ -19,17 +20,22 @@ type WebGoogleTTS struct {
 func NewWebGoogleTTSClient() (*WebGoogleTTS, error) {
 	ctx := context.Background()
 
-	if jsonCreds := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"); jsonCreds != "" {
-		client, err := texttospeech.NewClient(ctx)
+	// Recommended for platforms like Railway: store JSON content in an env var.
+	if jsonCreds := os.Getenv("GOOGLE_CREDENTIALS_JSON"); jsonCreds != "" {
+		opts := option.WithCredentialsJSON([]byte(jsonCreds))
+		client, err := texttospeech.NewClient(ctx, opts)
 		if err != nil {
-			return nil, fmt.Errorf("failed creating google tts client for os.json-creds: %w", err)
+			return nil, fmt.Errorf("failed creating google tts client from json env var: %w", err)
 		}
 		return &WebGoogleTTS{client: client, logger: logger.New()}, nil
 	}
 
+	// For other environments, rely on the default credential provider chain.
+	// This chain will automatically look for GOOGLE_APPLICATION_CREDENTIALS file,
+	// gcloud credentials, and metadata server credentials.
 	client, err := texttospeech.NewClient(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Google TTS client: %w", err)
+		return nil, fmt.Errorf("failed to create Google TTS client using default credentials: %w", err)
 	}
 
 	return &WebGoogleTTS{
