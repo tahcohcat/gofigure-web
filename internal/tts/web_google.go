@@ -3,6 +3,7 @@ package tts
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
@@ -17,6 +18,15 @@ type WebGoogleTTS struct {
 
 func NewWebGoogleTTSClient() (*WebGoogleTTS, error) {
 	ctx := context.Background()
+
+	if jsonCreds := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"); jsonCreds != "" {
+		client, err := texttospeech.NewClient(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed creating google tts client for os.json-creds: %w", err)
+		}
+		return &WebGoogleTTS{client: client, logger: logger.New()}, nil
+	}
+
 	client, err := texttospeech.NewClient(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Google TTS client: %w", err)
@@ -57,8 +67,8 @@ func (g *WebGoogleTTS) GenerateAudio(ctx context.Context, text, emotion string, 
 			InputSource: &tts.SynthesisInput_Text{Text: cleanText},
 		},
 		Voice: &tts.VoiceSelectionParams{
-			LanguageCode: languageCode,    // Dynamic language code based on model
-			Name:         model.Model,     // Full model name (e.g., "en-GB-Standard-D")
+			LanguageCode: languageCode, // Dynamic language code based on model
+			Name:         model.Model,  // Full model name (e.g., "en-GB-Standard-D")
 		},
 		AudioConfig: &tts.AudioConfig{
 			AudioEncoding:   tts.AudioEncoding_MP3, // Use MP3 for web compatibility
@@ -69,7 +79,7 @@ func (g *WebGoogleTTS) GenerateAudio(ctx context.Context, text, emotion string, 
 		},
 	}
 
-	g.logger.Debug(fmt.Sprintf("Generating Google TTS audio with voice: %s, language: %s, emotion: %s", 
+	g.logger.Debug(fmt.Sprintf("Generating Google TTS audio with voice: %s, language: %s, emotion: %s",
 		model.Model, languageCode, emotion))
 
 	// Generate the audio
