@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -75,7 +76,7 @@ func (th *TTSHandler) SpeakText(w http.ResponseWriter, r *http.Request) {
 		Engine: ttsModel.Engine,
 		Model:  ttsModel.Model,
 	}
-	
+
 	// Generate TTS audio data
 	webTTS, ok := th.ttsClient.(tts.WebTTS)
 	if !ok {
@@ -93,7 +94,7 @@ func (th *TTSHandler) SpeakText(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "audio/mpeg")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	
+
 	// Write audio data directly to response
 	_, err = w.Write(audioData)
 	if err != nil {
@@ -127,7 +128,7 @@ func (th *TTSHandler) TestTTS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "audio/mpeg")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	
+
 	// Write audio data directly to response
 	_, err = w.Write(audioData)
 	if err != nil {
@@ -180,9 +181,17 @@ func RegisterTTSRoutes(r *mux.Router, gameHandler *GameHandler) {
 	if err != nil {
 		// If TTS setup fails, we'll skip TTS routes
 		// This allows the app to run without TTS if Google credentials aren't configured
+
+		r.HandleFunc("/tts/test", func(w http.ResponseWriter, r *http.Request) {
+			http.Error(w, "TTS service unavailable. err: "+err.Error(), http.StatusServiceUnavailable)
+		}).Methods("GET")
+
+		fmt.Printf("TTS service unavailable. err: %v\n", err)
 		return
 	}
 
 	r.HandleFunc("/tts/speak", ttsHandler.SpeakText).Methods("POST")
 	r.HandleFunc("/tts/test", ttsHandler.TestTTS).Methods("GET")
+
+	fmt.Printf("✅ TTS service registered successfully\n")
 }
