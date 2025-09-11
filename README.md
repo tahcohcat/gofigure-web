@@ -1,3 +1,9 @@
+[![Made with Go](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/Go-1.24.3-blue.svg)](https://go.dev/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+[![OpenAI](https://img.shields.io/badge/AI-OpenAI-412991.svg)](https://openai.com) [![Google TTS](https://img.shields.io/badge/Speech-Google_TTS-4285F4.svg)](https://cloud.google.com/text-to-speech) [![Gorilla Mux](https://img.shields.io/badge/Router-Gorilla_Mux-7D4C9F.svg)](https://github.com/gorilla/mux) [![Viper](https://img.shields.io/badge/Config-Viper-3D3C78.svg)](https://github.com/spf13/viper)
+
 # GoFigure Web
 
 A web-based murder mystery roleplay game powered by AI.

@@ -50,7 +50,7 @@
         "Lord Blackwood seemed very upset about something today"
       ],
       "reliable": true,
-      "tts": [{"engine": "google", "model" :  "en-US-Chirp3-HD-Sulafat"}],
+      "tts": [{"engine": "google", "model" :  "en-GB-Studio-C"}],
       "secrets": ["Overheard Lord Blackwood threatening divorce"]
     },
     {
