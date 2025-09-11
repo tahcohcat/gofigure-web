@@ -1,0 +1,54 @@
+# config.yaml - Example configuration showing both LLM providers
+
+# LLM Provider Selection
+llm:
+  provider: "openai"  # Options: "ollama" or "openai"
+
+# Ollama Configuration (used when llm.provider = "ollama")
+ollama:
+  model: "llama3.2:3b"
+  timeout: 30
+
+# OpenAI Configuration (used when llm.provider = "openai")
+# api_key will be set from OPENAI_API_KEY environment variable
+openai:
+  api_key: ""                   # Will be overridden by OPENAI_API_KEY env var
+  model: "gpt-4o-mini"          # Options: gpt-4o, gpt-4o-mini, gpt-3.5-turbo, etc.
+  base_url: ""                  # Optional: for OpenAI-compatible APIs like Azure OpenAI
+  max_tokens: 1000              # Optional: limit response length
+  timeout: 30
+
+# Text-to-Speech Configuration
+tts:
+  enabled: true
+
+# Speech-to-Text Configuration
+sst:
+  enabled: true
+  provider: "google"
+  language_code: "en-GB"
+  sample_rate: 16000
+
+---
+
+# Alternative configuration using Ollama
+llm:
+  provider: "ollama"
+
+ollama:
+  model: "llama3.2:3b"
+  timeout: 45
+
+openai:
+  api_key: ""    # Not used when provider is ollama
+  model: ""
+  timeout: 30
+
+tts:
+  enabled: true
+
+sst:
+  enabled: true
+  provider: "google"
+  language_code: "en-GB"
+  sample_rate: 16000

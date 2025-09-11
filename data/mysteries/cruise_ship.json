@@ -1,0 +1,150 @@
+{
+  "title": "Death on the Aurora Star",
+  "difficulty": "Hard",
+  "introduction": "The luxury cruise ship Aurora Star glides through the Mediterranean under a blanket of stars. It's the final night of the seven-day voyage, and passengers are celebrating at the Captain's Farewell Gala in the Grand Ballroom. At 11:32 PM, during the height of the festivities, a blood-curdling scream pierces through the music. Moments later, the ship's famous celebrity chef, Marcus Beaumont, is found dead in the ship's cold storage freezer, apparently locked inside and frozen to death. With the ship still 12 hours from port and no way to contact authorities due to a mysterious communications blackout, you must uncover the truth before the killer strikes again or escapes when the ship docks.",
+  "narrator_tts": [
+    {
+      "engine": "google",
+      "model": "en-US-Chirp-HD-F"
+    }
+  ],
+  "victim": "Marcus Beaumont (Celebrity Chef)",
+  "killer": "Dr. Sarah Chen",
+  "weapon": "Hypothermia (locked in freezer)",
+  "location": "Ship's Cold Storage Freezer",
+  "motive": "Marcus discovered Dr. Chen was smuggling rare medications off the ship and threatened to expose her illegal operation",
+  "characters": [
+    {
+      "name": "Captain Rodriguez",
+      "personality": "Authoritative, experienced, protective of his ship's reputation but hiding something",
+      "knowledge": [
+        "The freezer door can only be locked from the outside with a master key",
+        "Only senior staff have access to master keys",
+        "The communications blackout started 30 minutes before the murder",
+        "He's been having heated discussions with the cruise line about budget cuts"
+      ],
+      "reliable": true,
+      "tts": [{"engine": "google", "model": "en-GB-Chirp-HD-D"}],
+      "secrets": [
+        "The ship has been losing money and he's under pressure to cut costs",
+        "He knows about some crew members working side jobs illegally"
+      ]
+    },
+    {
+      "name": "Isabella Rossi",
+      "personality": "Elegant socialite, appears grief-stricken but overly dramatic about the chef's death",
+      "knowledge": [
+        "Claims she was Marcus's biggest admirer and patron",
+        "Says she was in the ballroom all evening, many witnesses",
+        "Mentions Marcus seemed 'troubled' recently about something",
+        "Knows Marcus had been receiving threatening messages"
+      ],
+      "reliable": false,
+      "tts": [{"engine": "google", "model": "en-US-Chirp-HD-F"}],
+      "secrets": [
+        "She's actually Marcus's ex-wife who he left for another woman",
+        "She booked the cruise specifically to confront him",
+        "She has a solid alibi but is lying about their relationship"
+      ]
+    },
+    {
+      "name": "Tommy Nakamura",
+      "personality": "Young, ambitious sous chef, clearly nervous and defensive",
+      "knowledge": [
+        "Admits to arguing with Marcus earlier about kitchen management",
+        "Claims Marcus was paranoid and thought someone was 'out to get him'",
+        "Says he was cleaning the kitchen when Marcus disappeared",
+        "Knows Marcus kept a private journal hidden in his cabin"
+      ],
+      "reliable": true,
+      "tts": [{"engine": "google", "model": "en-AU-Chirp3-HD-Sadaltager"}],
+      "secrets": [
+        "He was planning to quit and start his own restaurant with stolen recipes",
+        "Marcus caught him photographing recipe books the night before",
+        "He desperately needed money for his sick mother's treatment"
+      ]
+    },
+    {
+      "name": "Dr. Sarah Chen",
+      "personality": "Calm, logical ship's doctor, helpful but deflects personal questions",
+      "knowledge": [
+        "Confirms the cause of death as hypothermia",
+        "Mentions the freezer temperature was set unusually low",
+        "Says she treated Marcus for anxiety medication recently",
+        "Claims she was in the medical bay organizing supplies during the gala"
+      ],
+      "reliable": false,
+      "tts": [{"engine": "google", "model": "en-US-Chirp3-HD-Kore"}],
+      "secrets": [
+        "She's been smuggling experimental medications to sell on the black market",
+        "Marcus discovered her illegal operation and threatened to expose her",
+        "She has access to the master keys through medical emergency protocols"
+      ]
+    },
+    {
+      "name": "Raj Abdul",
+      "personality": "Mysterious Asian passenger, evasive about his background",
+      "knowledge": [
+        "Claims to be a food critic but seems to know very little about cuisine",
+        "Was seen having a heated conversation with Marcus two days ago",
+        "Says he witnessed someone suspicious near the kitchen area around 11 PM",
+        "Mentions Marcus seemed to recognize him from somewhere"
+      ],
+      "reliable": false,
+      "tts": [{"engine": "google", "model": "en-IN-Standard-F"}],
+      "secrets": [
+        "He's actually an investigative journalist researching cruise ship safety violations",
+        "He was working with Marcus to expose corruption in the cruise industry",
+        "He has evidence of safety violations that could shut down the ship"
+      ]
+    },
+    {
+      "name": "Jenny Walsh",
+      "personality": "Cheerful cruise activities director, overly helpful but seems to know everyone's business",
+      "knowledge": [
+        "Knows all the staff schedules and who has access to restricted areas",
+        "Mentions she saw Dr. Chen leaving the medical bay around 11:15 PM",
+        "Says Marcus had been asking questions about crew background checks",
+        "Knows about various passenger complaints and crew issues"
+      ],
+      "reliable": true,
+      "tts": [{"engine": "google", "model": "en-US-Chirp3-HD-Erinome"}],
+      "secrets": [
+        "She's been covering for crew members who don't have proper work visas",
+        "She knows about several illegal activities happening on the ship"
+      ]
+    },
+    {
+      "name": "Antonio Silva",
+      "personality": "Head of security, gruff and suspicious of everyone, takes his job seriously",
+      "knowledge": [
+        "The security cameras in the kitchen area mysteriously malfunctioned at 11 PM",
+        "He found the freezer door locked with no signs of forced entry",
+        "Says someone with technical knowledge disabled the cameras",
+        "Mentions Marcus had requested increased security recently"
+      ],
+      "reliable": true,
+      "tts": [{"engine": "google", "model": "en-US-Chirp3-HD-Sadachbia"}],
+      "secrets": [
+        "He discovered evidence of smuggling but hasn't reported it yet",
+        "He suspects Dr. Chen but has no concrete proof"
+      ]
+    },
+    {
+      "name": "Eleanor Whitfield",
+      "personality": "Wealthy elderly passenger, sharp-witted despite her age, observant gossip",
+      "knowledge": [
+        "She was on deck for some fresh air and saw the doctor hurrying somewhere around 11:20 PM",
+        "Mentions she's traveled on many cruises and this crew seems 'different'",
+        "Says she overheard Marcus on the phone arguing about money the day before",
+        "Knows Marcus seemed afraid of something or someone"
+      ],
+      "reliable": true,
+      "tts": [{"engine": "google", "model": "en-US-Chirp3-HD-Vindemiatrix"}],
+      "secrets": [
+        "She's a retired private investigator with sharp instincts",
+        "She's been quietly investigating suspicious activities on the ship"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+llm:
+  provider: "openai"
+
+openai:
+  api_key: ""
+  model: "gpt-4o-mini"
+  max_tokens: 1000
+  timeout: 30
+
+tts:
+  enabled: false
+
+sst:
+  enabled: false

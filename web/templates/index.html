@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoFigure - Murder Mystery Game</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎭 GoFigure</h1>
+            <p class="subtitle">Interactive Murder Mystery Game</p>
+        </header>
+
+        <!-- Mystery Selection -->
+        <div id="mystery-selection" class="screen active">
+            <h2>Choose Your Mystery</h2>
+            <div id="mystery-list" class="mystery-grid">
+                <!-- Mysteries will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <h2 id="mystery-title"></h2>
+                <div class="game-controls">
+                    <button id="tts-toggle" class="btn btn-secondary">🔊 TTS On</button>
+                    <button id="tts-test" class="btn btn-secondary">🧪 Test Audio</button>
+                    <button id="stop-audio" class="btn btn-secondary">⏹️ Stop</button>
+                    <button id="back-btn" class="btn btn-secondary">← Back to Mysteries</button>
+                </div>
+            </div>
+
+            <!-- Introduction -->
+            <div id="intro-section">
+                <div id="intro-text"></div>
+                <button id="start-investigation-btn" class="btn btn-primary">Start Investigation</button>
+            </div>
+
+            <!-- Investigation Interface -->
+            <div id="investigation-section" class="hidden">
+                <div class="investigation-layout">
+                    <!-- Characters Panel -->
+                    <div class="characters-panel">
+                        <h3>Suspects</h3>
+                        <div id="characters-list">
+                            <!-- Characters will be loaded here -->
+                        </div>
+                        <div class="accuse-section">
+                            <button id="accuse-btn" class="btn btn-danger" disabled>🎯 Make Accusation</button>
+                        </div>
+                    </div>
+
+                    <!-- Conversation Panel -->
+                    <div class="conversation-panel">
+                        <div id="conversation-history"></div>
+                        <div class="question-input">
+                            <input type="text" id="question-input" placeholder="Ask a question..." disabled>
+                            <button id="ask-btn" class="btn btn-primary" disabled>Ask</button>
+                        </div>
+                        <div id="selected-character" class="hidden">
+                            Talking to: <span id="selected-character-name"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen hidden">
+            <div class="loading-spinner"></div>
+            <p>Loading mystery...</p>
+        </div>
+
+        <!-- Accusation Modal -->
+        <div id="accusation-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>🎯 Make Your Accusation</h2>
+                <p>Who do you think committed the murder?</p>
+                <div id="accusation-characters">
+                    <!-- Character buttons will be loaded here -->
+                </div>
+                <div class="modal-actions">
+                    <button id="cancel-accusation" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Modal -->
+        <div id="result-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="result-title"></h2>
+                <p id="result-message"></p>
+                <div class="modal-actions">
+                    <button id="play-again-btn" class="btn btn-primary">Play Again</button>
+                    <button id="back-to-menu-btn" class="btn btn-secondary">Back to Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

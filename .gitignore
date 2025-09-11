@@ -27,6 +27,8 @@ go.work.sum
 # env file
 .env
 
+NOTES.md
+
 # Editor/IDE
 # .idea/
 # .vscode/

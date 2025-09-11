@@ -1,0 +1,99 @@
+{
+  "title": "Corporate Betrayal",
+  "difficulty": "Medium",
+  "introduction": "TechVantage Corporation's 47th floor executive suite is buzzing with tension. It's 9:15 PM on a Thursday, and most employees have gone home, but the executive team is working late to prepare for tomorrow's crucial board meeting that will determine the company's future. When security guard Miguel Santos makes his rounds, he discovers CEO Victoria Sterling slumped over her mahogany desk in her corner office, apparently poisoned. The building has been on lockdown since 6 PM due to a 'security drill,' meaning the killer is still inside. With millions of dollars and corporate secrets at stake, you must uncover who among the remaining executives eliminated their boss before they can destroy the evidence or escape.",
+  "narrator_tts": [
+    {
+      "engine": "google",
+      "model": "en-US-Chirp-HD-F"
+    }
+  ],
+  "victim": "Victoria Sterling (CEO)",
+  "killer": "Marcus Webb",
+  "weapon": "Cyanide (in coffee)",
+  "location": "CEO's Corner Office, 47th Floor",
+  "motive": "Victoria discovered Marcus had been embezzling funds and selling trade secrets to competitors. She was about to expose him at tomorrow's board meeting.",
+  "characters": [
+    {
+      "name": "Marcus Webb",
+      "personality": "Smooth-talking CFO, appears helpful and concerned but is calculating and desperate to cover his tracks",
+      "knowledge": [
+        "The building security system requires executive keycards after 6 PM",
+        "Victoria was working late on the quarterly financial reports",
+        "There's been tension about the upcoming merger negotiations",
+        "The coffee machine in Victoria's office was recently serviced"
+      ],
+      "reliable": false,
+      "tts": [{"engine": "google", "model": "en-US-Chirp-HD-D"}],
+      "secrets": [
+        "He's been embezzling company funds for two years to pay gambling debts",
+        "He's been selling proprietary technology blueprints to TechVantage's biggest rival",
+        "Victoria confronted him yesterday with evidence of his crimes"
+      ]
+    },
+    {
+      "name": "Dr. Sarah Kim",
+      "personality": "Brilliant but anxious CTO, genuinely shocked by the murder and worried about the company's future",
+      "knowledge": [
+        "Victoria had been acting strange and paranoid lately",
+        "The merger with GlobalTech hinges on tomorrow's board presentation",
+        "Someone has been accessing the secure servers after hours",
+        "Victoria kept a private safe behind her bookshelf"
+      ],
+      "reliable": true,
+      "tts": [{"engine": "google", "model": "en-US-Chirp-HD-F"}],
+      "secrets": [
+        "She discovered someone has been copying proprietary code but doesn't know who",
+        "Victoria asked her to change all the system passwords yesterday"
+      ]
+    },
+    {
+      "name": "James Mitchell",
+      "personality": "Ambitious VP of Sales, frustrated by Victoria's leadership but genuinely innocent",
+      "knowledge": [
+        "Victoria was planning major layoffs after the merger",
+        "The board has been pressuring Victoria to step down",
+        "He was in the conference room reviewing presentation slides until 9 PM",
+        "Victoria's assistant left early today with the flu"
+      ],
+      "reliable": true,
+      "tts": [{"engine": "google", "model": "en-GB-Chirp-HD-D"}],
+      "secrets": [
+        "He's been interviewing for CEO positions at competitor companies",
+        "The board approached him about potentially replacing Victoria"
+      ]
+    },
+    {
+      "name": "Elena Rodriguez",
+      "personality": "Sharp-witted Head of Legal, protective of company interests and suspicious of everyone's motives",
+      "knowledge": [
+        "Victoria received threatening emails about the merger",
+        "There's been unusual financial activity in several accounts",
+        "The security cameras in Victoria's office were mysteriously offline tonight",
+        "Victoria was meeting with internal auditors this week"
+      ],
+      "reliable": true,
+      "tts": [{"engine": "google", "model": "en-US-Chirp-HD-O"}],
+      "secrets": [
+        "She's been investigating financial irregularities for weeks",
+        "Victoria asked her to prepare termination papers for a senior executive"
+      ]
+    },
+    {
+      "name": "Miguel Santos",
+      "personality": "Observant security guard, knows everyone's habits and has noticed strange behavior lately",
+      "knowledge": [
+        "He saw someone enter Victoria's office around 8:45 PM",
+        "The coffee delivery service came by around 8:30 PM as usual",
+        "Victoria always worked late before important board meetings",
+        "The executive elevator required a keycard tonight due to the security drill"
+      ],
+      "reliable": true,
+      "tts": [{"engine": "google", "model": "en-US-Chirp-HD-D"}],
+      "secrets": [
+        "He noticed Marcus has been staying unusually late and acting nervous recently",
+        "The 'security drill' was actually called by Marcus earlier today"
+      ]
+    }
+  ]
+}
