@@ -51,7 +51,6 @@ echo "3. Set environment variable: GOOGLE_APPLICATION_CREDENTIALS_JSON"
 echo "4. Deploy automatically!"
 echo
 echo "💡 See DEPLOYMENT.md for detailed instructions"
-echo "💰 Expected cost: $0-8/month for personal use"
 echo
 
 # Check if we can test build locally
