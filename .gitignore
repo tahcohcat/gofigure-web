@@ -32,3 +32,6 @@ NOTES.md
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Local configuration - DO NOT COMMIT
+config.local.yaml

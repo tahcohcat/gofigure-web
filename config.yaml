@@ -1,3 +1,7 @@
+# This file defines the configuration structure.
+# Secret values should be provided via environment variables
+# (e.g., AUTH_LOGIN_PASSWORD) or a local config.local.yaml file.
+
 llm:
   provider: "openai"
 
@@ -12,3 +16,7 @@ tts:
 
 sst:
   enabled: false
+
+auth:
+  session_secret: ""
+  login_password: ""
