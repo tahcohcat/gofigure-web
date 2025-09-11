@@ -19,15 +19,23 @@ type WebGoogleTTS struct {
 
 func NewWebGoogleTTSClient() (*WebGoogleTTS, error) {
 	ctx := context.Background()
+	logger := logger.New()
 
-	// Recommended for platforms like Railway: store JSON content in an env var.
-	if jsonCreds := os.Getenv("GOOGLE_CREDENTIALS_JSON"); jsonCreds != "" {
-		opts := option.WithCredentialsJSON([]byte(jsonCreds))
-		client, err := texttospeech.NewClient(ctx, opts)
-		if err != nil {
-			return nil, fmt.Errorf("failed creating google tts client from json env var: %w", err)
+	jsonCreds, found := os.LookupEnv("GOOGLE_CREDENTIALS_JSON")
+	if found {
+		if jsonCreds != "" {
+			logger.Info("Found GOOGLE_CREDENTIALS_JSON environment variable with content. Initializing client with it.")
+			opts := option.WithCredentialsJSON([]byte(jsonCreds))
+			client, err := texttospeech.NewClient(ctx, opts)
+			if err != nil {
+				return nil, fmt.Errorf("failed creating google tts client from json env var: %w", err)
+			}
+			return &WebGoogleTTS{client: client, logger: logger}, nil
+		} else {
+			logger.Warn("GOOGLE_CREDENTIALS_JSON environment variable is set but empty. Falling back to default credentials.")
 		}
-		return &WebGoogleTTS{client: client, logger: logger.New()}, nil
+	} else {
+		logger.Info("GOOGLE_CREDENTIALS_JSON environment variable not found. Falling back to default credentials.")
 	}
 
 	// For other environments, rely on the default credential provider chain.
@@ -40,7 +48,7 @@ func NewWebGoogleTTSClient() (*WebGoogleTTS, error) {
 
 	return &WebGoogleTTS{
 		client: client,
-		logger: logger.New(),
+		logger: logger,
 	}, nil
 }
 
