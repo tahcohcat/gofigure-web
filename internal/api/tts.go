@@ -148,7 +148,11 @@ func (th *TTSHandler) findTTSModelFromMystery(sessionID, characterName string) g
 	}
 
 	// Get mystery data from game handler
-	murder, exists := th.gameHandler.murders[sessionID]
+	session, exists := th.gameHandler.sessions[sessionID]
+	if !exists {
+		return defaultModel
+	}
+	murder := session.Murder
 	if !exists {
 		return defaultModel
 	}

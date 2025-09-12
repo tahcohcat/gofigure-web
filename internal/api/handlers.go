@@ -3,17 +3,31 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"log"
+	"math"
+	"math/rand"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/tahcohcat/gofigure-web/internal/game"
+	"github.com/tahcohcat/gofigure-web/internal/logger"
 )
 
+type GameSession struct {
+	Murder        *game.Murder
+	Timer         *time.Ticker
+	RemainingTime int
+	TimerEnabled  bool
+	GameOver      bool
+}
+
 type GameHandler struct {
-	murders   map[string]*game.Murder  // Store loaded mysteries by ID
-	engine    *game.WebEngine         // Game engine instance
+	sessions map[string]*GameSession // Store game sessions by ID
+	engine   *game.WebEngine        // Game engine instance
 }
 
 func NewGameHandler() *GameHandler {
@@ -23,8 +37,8 @@ func NewGameHandler() *GameHandler {
 	}
 
 	return &GameHandler{
-		murders: make(map[string]*game.Murder),
-		engine:  engine,
+		sessions: make(map[string]*GameSession),
+		engine:   engine,
 	}
 }
 
@@ -42,7 +56,7 @@ func (gh *GameHandler) ListMysteries(w http.ResponseWriter, r *http.Request) {
 			"id":          "blackwood",
 			"title":       "The Blackwood Manor Murder",
 			"description": "A classic manor house mystery with a stormy night setting",
-			"difficulty":  "Medium", 
+			"difficulty":  "Medium",
 			"file":        "data/mysteries/blackwood.json",
 		},
 		{
@@ -54,7 +68,7 @@ func (gh *GameHandler) ListMysteries(w http.ResponseWriter, r *http.Request) {
 		},
 		{
 			"id":          "cruise_ship",
-			"title":       "Death on the Aurora Star", 
+			"title":       "Death on the Aurora Star",
 			"description": "A luxury cruise ship mystery with complex motives and alibis",
 			"difficulty":  "Hard",
 			"file":        "data/mysteries/cruise_ship.json",
@@ -86,9 +100,29 @@ func (gh *GameHandler) StartGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Store the game session (in production, use proper session management)
+	// Create and store the game session
 	sessionID := generateSessionID()
-	gh.murders[sessionID] = &murder
+	session := &GameSession{
+		Murder:        &murder,
+		RemainingTime: 3600, // 1 hour
+		TimerEnabled:  true,
+		GameOver:      false,
+	}
+	gh.sessions[sessionID] = session
+
+	// Start the game timer
+	session.Timer = time.NewTicker(1 * time.Second)
+	go func() {
+		for range session.Timer.C {
+			if session.TimerEnabled && !session.GameOver {
+				session.RemainingTime--
+				if session.RemainingTime <= 0 {
+					session.GameOver = true
+					session.Timer.Stop()
+				}
+			}
+		}
+	}()
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -96,10 +130,27 @@ func (gh *GameHandler) StartGame(w http.ResponseWriter, r *http.Request) {
 		"title":      murder.Title,
 		"intro":      murder.Intro,
 		"characters": murder.Characters,
-		"killer":     murder.Killer,    // Include killer info for accusation checking
+		"killer":     murder.Killer, // Include killer info for accusation checking
 		"location":   murder.Location,
 		"weapon":     murder.Weapon,
 	})
+}
+
+// Add to your ask question request struct
+type AskQuestionRequest struct {
+	CharacterName string  `json:"character_name"`
+	Question      string  `json:"question"`
+	CurrentStress float64 `json:"current_stress"`
+}
+
+type CharacterResponse struct {
+	Character    string  `json:"character"`
+	Question     string  `json:"question"`
+	Response     string  `json:"response"`
+	Emotion      string  `json:"emotion"`
+	StressLevel  float64 `json:"stress_level"`
+	StressChange float64 `json:"stress_change"`
+	StressState  string  `json:"stress_state"`
 }
 
 // POST /api/v1/game/{session}/ask - Ask a character a question
@@ -107,17 +158,18 @@ func (gh *GameHandler) AskCharacter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	sessionID := vars["session"]
 
-	murder, exists := gh.murders[sessionID]
+	session, exists := gh.sessions[sessionID]
 	if !exists {
 		http.Error(w, "Game session not found", http.StatusNotFound)
 		return
 	}
 
-	var req struct {
-		CharacterName string `json:"character_name"`
-		Question      string `json:"question"`
+	if session.GameOver {
+		http.Error(w, "Game is over", http.StatusBadRequest)
+		return
 	}
 
+	var req AskQuestionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -125,9 +177,9 @@ func (gh *GameHandler) AskCharacter(w http.ResponseWriter, r *http.Request) {
 
 	// Find the character
 	var character *game.Character
-	for i := range murder.Characters {
-		if murder.Characters[i].Name == req.CharacterName {
-			character = &murder.Characters[i]
+	for i := range session.Murder.Characters {
+		if session.Murder.Characters[i].Name == req.CharacterName {
+			character = &session.Murder.Characters[i]
 			break
 		}
 	}
@@ -137,38 +189,177 @@ func (gh *GameHandler) AskCharacter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Calculate stress response
+	newStressLevel, stressState := calculateStressResponse(req.Question, character, req.CurrentStress)
+	stressChange := newStressLevel - req.CurrentStress
+
+	// Log the interaction for debugging
+	log.Printf("Character %s stress: %.1f -> %.1f (change: +%.1f) - State: %s",
+		character.Name, req.CurrentStress, newStressLevel, stressChange, stressState)
+
+	logger.New().Info(fmt.Sprintf("Character %s stress: %.1f -> %.1f (change: +%.1f) - State: %s",
+		character.Name, req.CurrentStress, newStressLevel, stressChange, stressState))
+
 	// Use the game engine to get character response
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	reply, err := gh.engine.AskCharacterQuestion(ctx, character, req.Question, *murder)
+	//todo: add stress to ai interaction
+	reply, err := gh.engine.AskCharacterQuestion(ctx, character, req.Question, *session.Murder)
 	if err != nil {
 		http.Error(w, "Failed to get character response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	response := map[string]interface{}{
-		"character": req.CharacterName,
-		"question":  req.Question,
-		"response":  reply.Response,
-		"emotion":   reply.Emotion,
+	response := CharacterResponse{
+		Character:    req.CharacterName,
+		Question:     req.Question,
+		Response:     reply.Response,
+		Emotion:      reply.Emotion,
+		StressState:  stressState,
+		StressChange: stressChange,
+		StressLevel:  newStressLevel,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
+// GET /api/v1/game/{session}/timer - Get remaining time
+func (gh *GameHandler) GetTimer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sessionID := vars["session"]
+
+	session, exists := gh.sessions[sessionID]
+	if !exists {
+		http.Error(w, "Game session not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"remaining_time": session.RemainingTime,
+		"timer_enabled":  session.TimerEnabled,
+		"game_over":      session.GameOver,
+	})
+}
+
+// POST /api/v1/game/{session}/timer/toggle - Toggle the timer
+func (gh *GameHandler) ToggleTimer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sessionID := vars["session"]
+
+	session, exists := gh.sessions[sessionID]
+	if !exists {
+		http.Error(w, "Game session not found", http.StatusNotFound)
+		return
+	}
+
+	session.TimerEnabled = !session.TimerEnabled
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"timer_enabled": session.TimerEnabled,
+	})
+}
+
 func RegisterRoutes(r *mux.Router) *GameHandler {
 	gh := NewGameHandler()
-	
+
 	r.HandleFunc("/mysteries", gh.ListMysteries).Methods("GET")
 	r.HandleFunc("/game/start", gh.StartGame).Methods("POST")
 	r.HandleFunc("/game/{session}/ask", gh.AskCharacter).Methods("POST")
-	
+	r.HandleFunc("/game/{session}/timer", gh.GetTimer).Methods("GET")
+	r.HandleFunc("/game/{session}/timer/toggle", gh.ToggleTimer).Methods("POST")
+
 	return gh
 }
 
 // Simple session ID generator (use UUID in production)
 func generateSessionID() string {
 	return "session_123" // Placeholder
+}
+
+// Add stress calculation function
+func calculateStressResponse(question string, character *game.Character, currentStress float64) (float64, string) {
+	questionLower := strings.ToLower(question)
+	stressIncrease := 5.0 // Base stress increase
+
+	// High stress keywords
+	highStressKeywords := []string{
+		"murder", "kill", "weapon", "blood", "death", "guilty",
+		"lie", "alibi", "where were you", "motive", "why did you",
+	}
+
+	// Medium stress keywords
+	mediumStressKeywords := []string{
+		"suspicious", "secret", "hidden", "truth", "evidence",
+		"witness", "saw", "heard", "relationship", "money",
+	}
+
+	// Low stress keywords (calming topics)
+	lowStressKeywords := []string{
+		"weather", "family", "work", "hobby", "general",
+		"hello", "how are", "nice day", "background",
+	}
+
+	// Calculate stress based on keywords
+	for _, keyword := range highStressKeywords {
+		if strings.Contains(questionLower, keyword) {
+			stressIncrease += 15.0
+		}
+	}
+
+	for _, keyword := range mediumStressKeywords {
+		if strings.Contains(questionLower, keyword) {
+			stressIncrease += 8.0
+		}
+	}
+
+	for _, keyword := range lowStressKeywords {
+		if strings.Contains(questionLower, keyword) {
+			stressIncrease = math.Max(1.0, stressIncrease-5.0)
+		}
+	}
+
+	// Character personality modifiers
+	personalityLower := strings.ToLower(character.Personality)
+	if strings.Contains(personalityLower, "nervous") {
+		stressIncrease *= 1.3
+	}
+	if strings.Contains(personalityLower, "calm") {
+		stressIncrease *= 0.7
+	}
+	if strings.Contains(personalityLower, "secretive") {
+		stressIncrease *= 1.2
+	}
+	if strings.Contains(personalityLower, "aggressive") {
+		stressIncrease *= 1.1
+	}
+
+	// Add some randomness
+	randomFactor := (rand.Float64() - 0.5) * 10 // ±5 variation
+	stressIncrease += randomFactor
+
+	// Calculate new stress level
+	newStressLevel := math.Min(100.0, currentStress+stressIncrease)
+
+	// Determine stress state
+	var stressState string
+	switch {
+	case newStressLevel < 25:
+		stressState = "calm"
+	case newStressLevel < 40:
+		stressState = "composed"
+	case newStressLevel < 55:
+		stressState = "nervous"
+	case newStressLevel < 70:
+		stressState = "agitated"
+	case newStressLevel < 85:
+		stressState = "stressed"
+	default:
+		stressState = "nervous"
+	}
+
+	return newStressLevel, stressState
 }
