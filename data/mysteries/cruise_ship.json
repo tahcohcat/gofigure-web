@@ -1,6 +1,40 @@
 {
   "title": "Death on the Aurora Star",
   "difficulty": "Hard",
+  "credits": [
+    {
+      "image_path": "static/images/man.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man\" title=\"man icons\">Man icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/woman.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/woman\" title=\"woman icons\">Woman icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/chef.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/chef\" title=\"chef icons\">Chef icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/girl_longhair.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/girl-longhair\" title=\"girl longhair icons\">Girl longhair icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/man_turban.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-turban\" title=\"man turban icons\">Man turban icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/girl_hoodie.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/girl-hoodie\" title=\"girl hoodie icons\">Girl hoodie icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/man_grey_beard.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-grey-beard\" title=\"man grey beard icons\">Man grey beard icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/woman_bun.png",
+      "credit_html": "<a href=\"https.www.flaticon.com/free-icons/woman-bun\" title=\"woman bun icons\">Woman bun icons created by Freepik - Flaticon</a>"
+    }
+  ],
   "introduction": "The luxury cruise ship Aurora Star glides through the Mediterranean under a blanket of stars. It's the final night of the seven-day voyage, and passengers are celebrating at the Captain's Farewell Gala in the Grand Ballroom. At 11:32 PM, during the height of the festivities, a blood-curdling scream pierces through the music. Moments later, the ship's famous celebrity chef, Marcus Beaumont, is found dead in the ship's cold storage freezer, apparently locked inside and frozen to death. With the ship still 12 hours from port and no way to contact authorities due to a mysterious communications blackout, you must uncover the truth before the killer strikes again or escapes when the ship docks.",
   "narrator_tts": [
     {
@@ -16,6 +50,8 @@
   "characters": [
     {
       "name": "Captain Rodriguez",
+      "sprite": "static/images/man.png",
+      "model_id": "character-a",
       "personality": "Authoritative, experienced, protective of his ship's reputation but hiding something",
       "knowledge": [
         "The freezer door can only be locked from the outside with a master key",
@@ -32,6 +68,8 @@
     },
     {
       "name": "Isabella Rossi",
+      "sprite": "static/images/woman.png",
+      "model_id": "character-b",
       "personality": "Elegant socialite, appears grief-stricken but overly dramatic about the chef's death",
       "knowledge": [
         "Claims she was Marcus's biggest admirer and patron",
@@ -49,6 +87,8 @@
     },
     {
       "name": "Tommy Nakamura",
+      "sprite": "static/images/chef.png",
+      "model_id": "character-c",
       "personality": "Young, ambitious sous chef, clearly nervous and defensive",
       "knowledge": [
         "Admits to arguing with Marcus earlier about kitchen management",
@@ -66,6 +106,8 @@
     },
     {
       "name": "Dr. Sarah Chen",
+      "sprite": "static/images/girl_longhair.png",
+      "model_id": "character-d",
       "personality": "Calm, logical ship's doctor, helpful but deflects personal questions",
       "knowledge": [
         "Confirms the cause of death as hypothermia",
@@ -83,6 +125,8 @@
     },
     {
       "name": "Raj Abdul",
+      "sprite": "static/images/man_turban.png",
+      "model_id": "character-e",
       "personality": "Mysterious Asian passenger, evasive about his background",
       "knowledge": [
         "Claims to be a food critic but seems to know very little about cuisine",
@@ -100,6 +144,8 @@
     },
     {
       "name": "Jenny Walsh",
+      "sprite": "static/images/girl_hoodie.png",
+      "model_id": "character-f",
       "personality": "Cheerful cruise activities director, overly helpful but seems to know everyone's business",
       "knowledge": [
         "Knows all the staff schedules and who has access to restricted areas",
@@ -116,6 +162,8 @@
     },
     {
       "name": "Antonio Silva",
+      "sprite": "static/images/man_grey_beard.png",
+      "model_id": "character-g",
       "personality": "Head of security, gruff and suspicious of everyone, takes his job seriously",
       "knowledge": [
         "The security cameras in the kitchen area mysteriously malfunctioned at 11 PM",
@@ -132,6 +180,8 @@
     },
     {
       "name": "Eleanor Whitfield",
+      "sprite": "static/images/woman_bun.png",
+      "model_id": "character-h",
       "personality": "Wealthy elderly passenger, sharp-witted despite her age, observant gossip",
       "knowledge": [
         "She was on deck for some fresh air and saw the doctor hurrying somewhere around 11:20 PM",

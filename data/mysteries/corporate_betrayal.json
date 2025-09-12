@@ -1,6 +1,28 @@
 {
   "title": "Corporate Betrayal",
   "difficulty": "Medium",
+  "credits": [
+    {
+      "image_path": "static/images/man_hipster.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-hipster\" title=\"man hipster icons\">Man hipster icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/woman_earrings.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/woman-earrings\" title=\"woman earrings icons\">Woman earrings icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/man_tie.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-tie\" title=\"man tie icons\">Man tie icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/woman_headband.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/woman-headband\" title=\"woman headband icons\">Woman headband icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/policeman.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/policeman\" title=\"policeman icons\">Policeman icons created by Freepik - Flaticon</a>"
+    }
+  ],
   "introduction": "TechVantage Corporation's 47th floor executive suite is buzzing with tension. It's 9:15 PM on a Thursday, and most employees have gone home, but the executive team is working late to prepare for tomorrow's crucial board meeting that will determine the company's future. When security guard Miguel Santos makes his rounds, he discovers CEO Victoria Sterling slumped over her mahogany desk in her corner office, apparently poisoned. The building has been on lockdown since 6 PM due to a 'security drill,' meaning the killer is still inside. With millions of dollars and corporate secrets at stake, you must uncover who among the remaining executives eliminated their boss before they can destroy the evidence or escape.",
   "narrator_tts": [
     {
@@ -16,6 +38,7 @@
   "characters": [
     {
       "name": "Marcus Webb",
+      "sprite": "static/images/man_hipster.png",
       "personality": "Smooth-talking CFO, appears helpful and concerned but is calculating and desperate to cover his tracks",
       "knowledge": [
         "The building security system requires executive keycards after 6 PM",
@@ -33,6 +56,7 @@
     },
     {
       "name": "Dr. Sarah Kim",
+      "sprite": "static/images/woman_earrings.png",
       "personality": "Brilliant but anxious CTO, genuinely shocked by the murder and worried about the company's future",
       "knowledge": [
         "Victoria had been acting strange and paranoid lately",
@@ -49,6 +73,7 @@
     },
     {
       "name": "James Mitchell",
+      "sprite": "static/images/man_tie.png",
       "personality": "Ambitious VP of Sales, frustrated by Victoria's leadership but genuinely innocent",
       "knowledge": [
         "Victoria was planning major layoffs after the merger",
@@ -65,6 +90,7 @@
     },
     {
       "name": "Elena Rodriguez",
+      "sprite": "static/images/woman_headband.png",
       "personality": "Sharp-witted Head of Legal, protective of company interests and suspicious of everyone's motives",
       "knowledge": [
         "Victoria received threatening emails about the merger",
@@ -81,6 +107,7 @@
     },
     {
       "name": "Miguel Santos",
+      "sprite": "static/images/policeman.png",
       "personality": "Observant security guard, knows everyone's habits and has noticed strange behavior lately",
       "knowledge": [
         "He saw someone enter Victoria's office around 8:45 PM",

@@ -53,6 +53,8 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		//todo: always disable locally
 		session, _ := Store.Get(r, "session-name")
 
 		if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {

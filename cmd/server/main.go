@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tahcohcat/gofigure-web/internal/api"
 	"github.com/tahcohcat/gofigure-web/internal/auth"
+	"github.com/tahcohcat/gofigure-web/internal/credits"
 	"github.com/tahcohcat/gofigure-web/internal/websocket"
 )
 
@@ -44,6 +45,7 @@ func main() {
 	// Public routes
 	r.HandleFunc("/login", auth.LoginHandler)
 	r.HandleFunc("/logout", auth.LogoutHandler)
+	r.HandleFunc("/credits", credits.Handler)
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./web/static/"))))
 
 	// Authenticated routes
