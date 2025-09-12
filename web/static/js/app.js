@@ -5,6 +5,7 @@ class GoFigureApp {
         this.selectedCharacter = null;
         this.currentAudio = null;
         this.ttsEnabled = true;
+        this.hintsEnabled = true;
         
         this.init();
     }
@@ -15,6 +16,15 @@ class GoFigureApp {
     }
 
     bindEvents() {
+        // Hints toggle
+        document.getElementById('hints-toggle').addEventListener('click', () => {
+            this.hintsEnabled = !this.hintsEnabled;
+            document.getElementById('hints-toggle').textContent = this.hintsEnabled ? '💡 Hints On' : '💡 Hints Off';
+            if (this.currentMystery) {
+                this.renderCharacters(this.currentMystery.characters);
+            }
+        });
+
         // Mystery selection
         document.addEventListener('click', (e) => {
             const card = e.target.closest('.mystery-card');
@@ -82,10 +92,6 @@ class GoFigureApp {
             document.getElementById('tts-toggle').textContent = enabled ? '🔊 TTS On' : '🔇 TTS Off';
         });
 
-        document.getElementById('stop-audio').addEventListener('click', () => {
-            this.stopTTS();
-        });
-
         document.getElementById('tts-test').addEventListener('click', () => {
             this.playTestTTS();
         });
@@ -138,7 +144,7 @@ class GoFigureApp {
             });
 
             const data = await response.json();
-            console.log('Received mystery data:', JSON.stringify(data, null, 2));
+            //console.log('Received mystery data:', JSON.stringify(data, null, 2));
             
             if (response.ok) {
                 this.currentSession = data.session_id;
@@ -184,7 +190,7 @@ class GoFigureApp {
                 <img src="${character.sprite}" alt="${character.name}" class="character-sprite">
                 <div class="character-info">
                     <h4>${character.name}</h4>
-                    <p>${character.personality}</p>
+                    ${this.hintsEnabled ? `<p>${character.personality}</p>` : ''}
                 </div>
             `;
             
@@ -282,10 +288,15 @@ class GoFigureApp {
         
         const message = document.createElement('div');
         message.className = `message ${type}`;
+
+        let messageContent = content;
+        if (type === 'character' && !this.hintsEnabled && this.ttsEnabled) {
+            messageContent = '<i>(Listen to the audio response)</i>';
+        }
         
         message.innerHTML = `
             <div class="message-header">${sender}</div>
-            <div class="message-content">${content}</div>
+            <div class="message-content">${messageContent}</div>
         `;
         
         conversation.appendChild(message);

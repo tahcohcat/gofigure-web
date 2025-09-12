@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
-	"google.golang.org/api/option"
 	tts "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"github.com/tahcohcat/gofigure-web/internal/logger"
+	"google.golang.org/api/option"
 )
 
 type WebGoogleTTS struct {
@@ -76,21 +76,27 @@ func (g *WebGoogleTTS) GenerateAudio(ctx context.Context, text, emotion string, 
 	languageCode := g.extractLanguageCode(model.Model)
 
 	// Build the synthesis request
+	audioConfig := &tts.AudioConfig{
+		AudioEncoding:   tts.AudioEncoding_MP3,
+		SpeakingRate:    g.getSpeakingRateForEmotion(emotion),
+		VolumeGainDb:    0.0,
+		SampleRateHertz: 22050,
+	}
+
+	// Conditionally add pitch only if the voice model is not a Chirp voice
+	if !strings.Contains(model.Model, "Chirp") {
+		audioConfig.Pitch = g.getPitchForEmotion(emotion)
+	}
+
 	req := &tts.SynthesizeSpeechRequest{
 		Input: &tts.SynthesisInput{
 			InputSource: &tts.SynthesisInput_Text{Text: cleanText},
 		},
 		Voice: &tts.VoiceSelectionParams{
-			LanguageCode: languageCode, // Dynamic language code based on model
-			Name:         model.Model,  // Full model name (e.g., "en-GB-Standard-D")
+			LanguageCode: languageCode,
+			Name:         model.Model,
 		},
-		AudioConfig: &tts.AudioConfig{
-			AudioEncoding:   tts.AudioEncoding_MP3, // Use MP3 for web compatibility
-			SpeakingRate:    g.getSpeakingRateForEmotion(emotion),
-			Pitch:           g.getPitchForEmotion(emotion),
-			VolumeGainDb:    0.0,
-			SampleRateHertz: 22050, // Good quality for web
-		},
+		AudioConfig: audioConfig,
 	}
 
 	g.logger.Debug(fmt.Sprintf("Generating Google TTS audio with voice: %s, language: %s, emotion: %s",
@@ -135,7 +141,7 @@ func (g *WebGoogleTTS) getSpeakingRateForEmotion(emotion string) float64 {
 	case "angry", "frustrated":
 		return 1.10
 	case "nervous", "worried", "anxious":
-		return 1.25
+		return 1.20
 	case "sad", "melancholy", "depressed":
 		return 0.85
 	case "mysterious", "suspicious":

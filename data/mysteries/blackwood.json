@@ -100,7 +100,7 @@
         "Believes Lady Blackwood married for money, not love",
         "Was in the smoking room playing cards during the incident"
       ],
-      "tts": [{"engine": "google", "model" :  "en-GB-Chirp3-HD-Iapetus"}],
+      "tts": [{"engine": "google", "model" :  "en-GB-Standard-O"}],
       "reliable": true,
       "secrets": [
         "Lord Blackwood confided his suspicions about the affair"
