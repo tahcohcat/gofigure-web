@@ -1,0 +1,551 @@
+class GoFigureApp {
+    constructor() {
+        this.currentSession = null;
+        this.currentMystery = null;
+        this.selectedCharacter = null;
+        this.currentAudio = null;
+        this.ttsEnabled = true;
+        
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+        this.loadMysteries();
+    }
+
+    bindEvents() {
+        // Mystery selection
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('mystery-card')) {
+                const mysteryId = e.target.dataset.mysteryId;
+                this.selectMystery(mysteryId);
+            }
+        });
+
+        // Character selection
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.character-card')) {
+                const card = e.target.closest('.character-card');
+                const characterName = card.dataset.characterName;
+                this.selectCharacter(characterName);
+            }
+        });
+
+        // Navigation
+        document.getElementById('back-btn').addEventListener('click', () => {
+            this.resetGame();
+            this.showScreen('mystery-selection');
+        });
+
+        document.getElementById('start-investigation-btn').addEventListener('click', () => {
+            this.startInvestigation();
+        });
+
+        // Question asking
+        document.getElementById('ask-btn').addEventListener('click', () => {
+            this.askQuestion();
+        });
+
+        document.getElementById('question-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.target.disabled) {
+                this.askQuestion();
+            }
+        });
+
+        // Accusation functionality
+        document.getElementById('accuse-btn').addEventListener('click', () => {
+            this.showAccusationModal();
+        });
+
+        document.getElementById('cancel-accusation').addEventListener('click', () => {
+            this.hideModal('accusation-modal');
+        });
+
+        // Result modal actions
+        document.getElementById('play-again-btn').addEventListener('click', () => {
+            this.resetGame();
+            this.selectMystery(this.currentMystery.id || 'cruise_ship');
+            this.hideModal('result-modal');
+        });
+
+        document.getElementById('back-to-menu-btn').addEventListener('click', () => {
+            this.resetGame();
+            this.showScreen('mystery-selection');
+            this.hideModal('result-modal');
+        });
+
+        // TTS controls
+        document.getElementById('tts-toggle').addEventListener('click', () => {
+            const enabled = this.toggleTTS();
+            document.getElementById('tts-toggle').textContent = enabled ? '🔊 TTS On' : '🔇 TTS Off';
+        });
+
+        document.getElementById('stop-audio').addEventListener('click', () => {
+            this.stopTTS();
+        });
+
+        document.getElementById('tts-test').addEventListener('click', () => {
+            this.playTestTTS();
+        });
+    }
+
+    async loadMysteries() {
+        try {
+            const response = await fetch('/api/v1/mysteries');
+            const data = await response.json();
+            
+            this.renderMysteries(data.mysteries);
+        } catch (error) {
+            console.error('Failed to load mysteries:', error);
+            this.showError('Failed to load mysteries. Please try again.');
+        }
+    }
+
+    renderMysteries(mysteries) {
+        const container = document.getElementById('mystery-list');
+        container.innerHTML = '';
+
+        mysteries.forEach(mystery => {
+            const card = document.createElement('div');
+            card.className = 'mystery-card';
+            card.dataset.mysteryId = mystery.id;
+            
+            card.innerHTML = `
+                <div class="mystery-header">
+                    <h3>${mystery.title}</h3>
+                    <span class="difficulty-badge difficulty-${mystery.difficulty.toLowerCase()}">${mystery.difficulty}</span>
+                </div>
+                <p>${mystery.description}</p>
+                <small>Mystery ID: ${mystery.id}</small>
+            `;
+            
+            container.appendChild(card);
+        });
+    }
+
+    async selectMystery(mysteryId) {
+        this.showScreen('loading-screen');
+        
+        try {
+            const response = await fetch('/api/v1/game/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ mystery_id: mysteryId })
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                this.currentSession = data.session_id;
+                this.currentMystery = data;
+                this.showGameScreen(data);
+            } else {
+                throw new Error(data.error || 'Failed to start game');
+            }
+        } catch (error) {
+            console.error('Failed to start game:', error);
+            this.showError('Failed to start the mystery. Please try again.');
+            this.showScreen('mystery-selection');
+        }
+    }
+
+    showGameScreen(mystery) {
+        // Set title
+        document.getElementById('mystery-title').textContent = mystery.title;
+        
+        // Set introduction
+        document.getElementById('intro-text').textContent = mystery.intro;
+        
+        // Render characters
+        this.renderCharacters(mystery.characters);
+        
+        // Show game screen
+        this.showScreen('game-screen');
+        
+        // Hide investigation section initially
+        document.getElementById('investigation-section').classList.add('hidden');
+    }
+
+    renderCharacters(characters) {
+        const container = document.getElementById('characters-list');
+        container.innerHTML = '';
+
+        characters.forEach(character => {
+            const card = document.createElement('div');
+            card.className = 'character-card';
+            card.dataset.characterName = character.name;
+            
+            card.innerHTML = `
+                <img src="${character.sprite}" alt="${character.name}" class="character-sprite">
+                <div class="character-info">
+                    <h4>${character.name}</h4>
+                    <p>${character.personality}</p>
+                </div>
+            `;
+            
+            container.appendChild(card);
+        });
+    }
+
+    startInvestigation() {
+        document.getElementById('intro-section').classList.add('hidden');
+        document.getElementById('investigation-section').classList.remove('hidden');
+        
+        // Enable accuse button
+        document.getElementById('accuse-btn').disabled = false;
+        
+        // Add welcome message to conversation
+        this.addMessage('system', 'Investigation Started', 'You may now question the suspects. Select a character from the left panel and ask them questions.');
+    }
+
+    selectCharacter(characterName) {
+        // Update UI
+        document.querySelectorAll('.character-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        document.querySelector(`[data-character-name="${characterName}"]`).classList.add('selected');
+        
+        // Enable input
+        document.getElementById('question-input').disabled = false;
+        document.getElementById('ask-btn').disabled = false;
+        
+        // Show selected character
+        document.getElementById('selected-character').classList.remove('hidden');
+        document.getElementById('selected-character-name').textContent = characterName;
+        
+        this.selectedCharacter = characterName;
+        
+        // Focus on input
+        document.getElementById('question-input').focus();
+    }
+
+    async askQuestion() {
+        const questionInput = document.getElementById('question-input');
+        const question = questionInput.value.trim();
+        
+        if (!question || !this.selectedCharacter) return;
+        
+        // Disable input while processing
+        questionInput.disabled = true;
+        document.getElementById('ask-btn').disabled = true;
+        
+        // Add question to conversation
+        this.addMessage('detective', 'You', question);
+        
+        // Clear input
+        questionInput.value = '';
+        
+        try {
+            const response = await fetch(`/api/v1/game/${this.currentSession}/ask`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    character_name: this.selectedCharacter,
+                    question: question
+                })
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Add character response
+                this.addMessage('character', data.character, `${data.response} [${data.emotion}]`);
+                
+                // Play TTS audio for character response
+                if (this.ttsEnabled) {
+                    this.playTTS(data.response, data.character, data.emotion);
+                }
+            } else {
+                throw new Error(data.error || 'Failed to get response');
+            }
+        } catch (error) {
+            console.error('Failed to ask question:', error);
+            this.addMessage('system', 'Error', 'Failed to get a response. Please try again.');
+        } finally {
+            // Re-enable input
+            questionInput.disabled = false;
+            document.getElementById('ask-btn').disabled = false;
+            questionInput.focus();
+        }
+    }
+
+    addMessage(type, sender, content) {
+        const conversation = document.getElementById('conversation-history');
+        
+        const message = document.createElement('div');
+        message.className = `message ${type}`;
+        
+        message.innerHTML = `
+            <div class="message-header">${sender}</div>
+            <div class="message-content">${content}</div>
+        `;
+        
+        conversation.appendChild(message);
+        
+        // Scroll to bottom
+        conversation.scrollTop = conversation.scrollHeight;
+    }
+
+    showScreen(screenId) {
+        // Hide all screens
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        
+        // Show target screen
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    showError(message) {
+        alert(message); // Simple error handling for now
+    }
+
+    resetGame() {
+        // Clear game state
+        this.currentSession = null;
+        this.currentMystery = null;
+        this.selectedCharacter = null;
+        
+        // Clear UI elements
+        document.getElementById('conversation-history').innerHTML = '';
+        document.getElementById('question-input').value = '';
+        document.getElementById('question-input').disabled = true;
+        document.getElementById('ask-btn').disabled = true;
+        document.getElementById('accuse-btn').disabled = true;
+        document.getElementById('selected-character').classList.add('hidden');
+        
+        // Clear character selection
+        document.querySelectorAll('.character-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        // Hide investigation section
+        document.getElementById('investigation-section').classList.add('hidden');
+        
+        // Show intro section
+        document.getElementById('intro-section').classList.remove('hidden');
+    }
+
+    showAccusationModal() {
+        if (!this.currentMystery || !this.currentMystery.characters) {
+            this.showError('No characters available for accusation');
+            return;
+        }
+
+        // Populate character buttons
+        const container = document.getElementById('accusation-characters');
+        container.innerHTML = '';
+
+        this.currentMystery.characters.forEach(character => {
+            const button = document.createElement('button');
+            button.className = 'accusation-character-btn';
+            button.textContent = character.name;
+            button.addEventListener('click', () => {
+                this.makeAccusation(character.name);
+            });
+            container.appendChild(button);
+        });
+
+        this.showModal('accusation-modal');
+    }
+
+    async makeAccusation(accusedName) {
+        this.hideModal('accusation-modal');
+        
+        // Check if the accusation is correct
+        const actualKiller = this.getActualKiller();
+        const isCorrect = accusedName === actualKiller;
+
+        this.showResultModal(isCorrect, accusedName);
+    }
+
+    getActualKiller() {
+        // Get killer from the mystery data
+        return this.currentMystery ? this.currentMystery.killer : null;
+    }
+
+    showResultModal(isCorrect, accusedName) {
+        const title = document.getElementById('result-title');
+        const message = document.getElementById('result-message');
+
+        if (isCorrect) {
+            title.textContent = '🎉 Congratulations!';
+            title.style.color = '#4CAF50';
+            message.textContent = `You correctly identified ${accusedName} as the killer! Your detective skills have solved the case.`;
+        } else {
+            title.textContent = '❌ Case Closed... Incorrectly';
+            title.style.color = '#dc3545';
+            message.textContent = `Unfortunately, ${accusedName} was not the killer. The real culprit remains free. Better luck next time, detective.`;
+        }
+
+        this.showModal('result-modal');
+    }
+
+    showModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+    }
+
+    hideModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    }
+
+    async playTTS(text, character, emotion) {
+        try {
+            // Stop any currently playing audio
+            this.stopTTS();
+
+            const response = await fetch('/api/v1/tts/speak', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: text,
+                    character: character,
+                    emotion: emotion,
+                    session_id: this.currentSession
+                })
+            });
+
+            if (response.ok) {
+                // Get audio data as blob
+                const audioBlob = await response.blob();
+                
+                // Create audio URL and play
+                const audioUrl = URL.createObjectURL(audioBlob);
+                this.currentAudio = new Audio(audioUrl);
+                
+                // Clean up URL when audio ends
+                this.currentAudio.addEventListener('ended', () => {
+                    URL.revokeObjectURL(audioUrl);
+                    this.currentAudio = null;
+                });
+
+                // Set volume and try to play the audio
+                this.currentAudio.volume = 0.8;
+                
+                try {
+                    await this.currentAudio.play();
+                    console.log(`🔊 Playing TTS for ${character}: ${text.substring(0, 50)}...`);
+                } catch (playError) {
+                    console.error('Audio play failed:', playError);
+                    console.log('This might be due to browser autoplay policy. User interaction required.');
+                    
+                    // Show a notification that user needs to interact
+                    this.showAudioPermissionPrompt();
+                }
+            } else {
+                console.warn('TTS failed:', response.statusText);
+            }
+        } catch (error) {
+            console.error('TTS Error:', error);
+        }
+    }
+
+    stopTTS() {
+        if (this.currentAudio) {
+            this.currentAudio.pause();
+            this.currentAudio = null;
+        }
+    }
+
+    toggleTTS() {
+        this.ttsEnabled = !this.ttsEnabled;
+        if (!this.ttsEnabled) {
+            this.stopTTS();
+        }
+        console.log(`TTS ${this.ttsEnabled ? 'enabled' : 'disabled'}`);
+        return this.ttsEnabled;
+    }
+
+    showAudioPermissionPrompt() {
+        // Create a temporary notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #d4af37;
+            color: #1a1a2e;
+            padding: 1rem;
+            border-radius: 8px;
+            z-index: 1001;
+            font-weight: bold;
+            cursor: pointer;
+        `;
+        notification.textContent = '🔊 Click here to enable audio';
+        
+        notification.addEventListener('click', () => {
+            this.testAudioPermission();
+            notification.remove();
+        });
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    async testAudioPermission() {
+        try {
+            // Create a short silent audio to unlock browser audio
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
+            
+            console.log('✅ Audio permission granted');
+            
+            // Test with actual TTS
+            this.playTestTTS();
+            
+        } catch (error) {
+            console.error('Audio permission test failed:', error);
+        }
+    }
+
+    async playTestTTS() {
+        try {
+            const response = await fetch('/api/v1/tts/test');
+            if (response.ok) {
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const testAudio = new Audio(audioUrl);
+                
+                testAudio.volume = 0.8;
+                await testAudio.play();
+                
+                console.log('🔊 TTS test audio played successfully');
+                
+                testAudio.addEventListener('ended', () => {
+                    URL.revokeObjectURL(audioUrl);
+                });
+            }
+        } catch (error) {
+            console.error('TTS test failed:', error);
+        }
+    }
+}
+
+// Initialize app when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new GoFigureApp();
+});

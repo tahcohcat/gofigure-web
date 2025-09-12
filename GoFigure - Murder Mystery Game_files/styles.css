@@ -1,0 +1,33 @@
+/* --- Character Sprites --- */
+
+.character-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.character-card:hover, .character-card.selected {
+    background-color: #f0f2f5;
+}
+
+.character-sprite {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%; /* Make sprites circular */
+    object-fit: cover;
+}
+
+.character-info h4 {
+    margin: 0 0 0.25rem 0;
+}
+
+.character-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+}

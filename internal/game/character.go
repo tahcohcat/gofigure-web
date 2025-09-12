@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/tahcohcat/gofigure-web/internal/llm"
-	"github.com/tahcohcat/gofigure-web/internal/logger"
 	"strings"
 	"time"
+
+	"github.com/tahcohcat/gofigure-web/internal/llm"
+	"github.com/tahcohcat/gofigure-web/internal/logger"
 )
 
 type Message struct {
@@ -27,6 +28,7 @@ type TTS struct {
 type Character struct {
 	Name        string   `json:"name"`
 	Personality string   `json:"personality"`
+	Sprite      string   `json:"sprite,omitempty"`
 	Knowledge   []string `json:"knowledge"`
 	Reliable    bool     `json:"reliable"`
 	TTS         []TTS    `json:"tts"`

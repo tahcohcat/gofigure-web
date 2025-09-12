@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credits - GoFigure</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        body {
+            padding: 2rem;
+        }
+        .credits-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+        }
+        .credits-list {
+            list-style: none;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="credits-container">
+        <h1>Asset Credits</h1>
+        <p>The following assets were used in the creation of this project.</p>
+        <ul class="credits-list">
+            {{range .}}
+            <li style="display: flex; align-items: center; margin-bottom: 1rem;">
+                <img src="{{.ImagePath}}" alt="credit icon" style="width: 32px; height: 32px; margin-right: 15px;">
+                <span>{{.CreditHTML}}</span>
+            </li>
+            {{else}}
+            <li>No credits information available.</li>
+            {{end}}
+        </ul>
+        <a href="/" class="back-link">Back to Game</a>
+    </div>
+</body>
+</html>

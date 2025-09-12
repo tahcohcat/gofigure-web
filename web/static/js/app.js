@@ -17,8 +17,9 @@ class GoFigureApp {
     bindEvents() {
         // Mystery selection
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('mystery-card')) {
-                const mysteryId = e.target.dataset.mysteryId;
+            const card = e.target.closest('.mystery-card');
+            if (card) {
+                const mysteryId = card.dataset.mysteryId;
                 this.selectMystery(mysteryId);
             }
         });
@@ -137,6 +138,7 @@ class GoFigureApp {
             });
 
             const data = await response.json();
+            console.log('Received mystery data:', JSON.stringify(data, null, 2));
             
             if (response.ok) {
                 this.currentSession = data.session_id;
@@ -179,8 +181,11 @@ class GoFigureApp {
             card.dataset.characterName = character.name;
             
             card.innerHTML = `
-                <h4>${character.name}</h4>
-                <p>${character.personality}</p>
+                <img src="${character.sprite}" alt="${character.name}" class="character-sprite">
+                <div class="character-info">
+                    <h4>${character.name}</h4>
+                    <p>${character.personality}</p>
+                </div>
             `;
             
             container.appendChild(card);

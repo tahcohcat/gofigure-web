@@ -1,6 +1,40 @@
 {
   "title": "The Blackwood Manor Murder",
   "difficulty": "Medium",
+  "credits": [
+    {
+      "image_path": "static/images/woman_white_hair.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/woman-white-hair\" title=\"woman white hair icons\">Woman white hair icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/concierge.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/concierge\" title=\"concierge icons\">Concierge icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/woman_blond.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/woman-blond\" title=\"woman blond icons\">Woman blond icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/man_hat_glasses.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-hat-glasses\" title=\"man hat glasses icons\">Man hat glasses icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/man_professor.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-professor\" title=\"man professor icons\">Man professor icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/girl_blond.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/girl-blond\" title=\"girl blond icons\">Girl blond icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/man_redhat.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-redhat\" title=\"man redhat icons\">Man redhat icons created by Freepik - Flaticon</a>"
+    },
+    {
+      "image_path": "static/images/man_waiter.png",
+      "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-waiter\" title=\"man waiter icons\">Man waiter icons created by Freepik - Flaticon</a>"
+    }
+  ],
   "introduction": "It is a stormy evening at Blackwood Manor. The guests have gathered for Lady Blackwood's birthday celebration when a terrible cry echoes through the corridors at 9:47 PM. Moments later, Lord Blackwood's body is discovered in the library by the butler, Mr. Graves. The victim appears to have been struck by a heavy object. With the phone lines down due to the storm and the nearest constable miles away, it falls to you, detective, to question the household and uncover the truth before the killer strikes again.",
   "narrator_tts": [
     {
@@ -16,6 +50,7 @@
   "characters": [
     {
       "name": "Lady Blackwood",
+      "sprite": "static/images/woman_white_hair.png",
       "personality": "Aristocratic, charming but calculating, becomes defensive when pressed",
       "knowledge": [
         "Claims she was in the drawing room during the murder",
@@ -29,6 +64,7 @@
     },
     {
       "name": "Mr. Graves the Butler",
+      "sprite": "static/images/concierge.png",
       "personality": "Professional, observant, loyal to the household",
       "knowledge": [
         "Found the body at approximately 9:50 PM",
@@ -42,6 +78,7 @@
     },
     {
       "name": "Clara the Maid",
+      "sprite": "static/images/woman_blond.png",
       "personality": "Nervous, gossipy, eager to please",
       "knowledge": [
         "Heard raised voices from the library around 9:45 PM",
@@ -49,12 +86,13 @@
         "Noticed the candlestick was missing when she cleaned earlier",
         "Lord Blackwood seemed very upset about something today"
       ],
-      "reliable": true,
       "tts": [{"engine": "google", "model" :  "en-GB-Studio-C"}],
+      "reliable": true,
       "secrets": ["Overheard Lord Blackwood threatening divorce"]
     },
     {
       "name": "Colonel Hawthorne",
+      "sprite": "static/images/man_hat_glasses.png",
       "personality": "Gruff, direct, old military friend of Lord Blackwood",
       "knowledge": [
         "Had a drink with Lord Blackwood who seemed troubled",
@@ -70,6 +108,7 @@
     },
     {
       "name": "Dr. Finch",
+      "sprite": "static/images/man_professor.png",
       "personality": "Calm, logical",
       "knowledge": ["Knows cause of death was blunt force"],
       "reliable": true,
@@ -77,6 +116,7 @@
     },
     {
       "name": "Emily (the Niece)",
+      "sprite": "static/images/girl_blond.png",
       "personality": "Sweet, innocent but hiding something",
       "knowledge": ["Saw the butler near the study"],
       "reliable": false,
@@ -84,6 +124,7 @@
     },
     {
       "name": "Mr. Moss the Gardener",
+      "sprite": "static/images/man_redhat.png",
       "personality": "Simple, honest",
       "knowledge": ["Was outside during murder"],
       "reliable": true,
@@ -91,6 +132,7 @@
     },
     {
       "name": "Reverend Clarke",
+      "sprite": "static/images/man_waiter.png",
       "personality": "Pious, moralizing",
       "knowledge": ["Heard a scream"],
       "reliable": true,
