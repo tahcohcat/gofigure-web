@@ -242,6 +242,7 @@ header {
 header h1 {
     margin: 0;
     font-size: 2.5rem;
+    font-family: 'Mystery Quest', cursive;
 }
 
 header .subtitle {
@@ -622,6 +623,14 @@ h2 {
 /* --- Utility Classes --- */
 .hidden {
     display: none !important;
+}
+
+.main-banner {
+    width: 100%;
+    height: 200px; /* Adjust as needed */
+    object-fit: cover;
+    display: block;
+    margin-bottom: 1rem;
 }
 
 /* --- Responsive Design --- */
