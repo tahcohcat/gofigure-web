@@ -1,3 +1,4 @@
+// cmd/server/main.go
 package main
 
 import (
@@ -12,6 +13,8 @@ import (
 	"github.com/tahcohcat/gofigure-web/internal/api"
 	"github.com/tahcohcat/gofigure-web/internal/auth"
 	"github.com/tahcohcat/gofigure-web/internal/credits"
+	"github.com/tahcohcat/gofigure-web/internal/database"
+	"github.com/tahcohcat/gofigure-web/internal/services"
 	"github.com/tahcohcat/gofigure-web/internal/websocket"
 )
 
@@ -31,30 +34,50 @@ func setupViper() {
 	viper.SetEnvPrefix("GOFIGURE")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
+
+	// Set default values for auth
+	viper.SetDefault("auth.session_secret", "your-secret-key-change-this-in-production")
+	viper.SetDefault("database.path", "./gofigure.db")
 }
 
 func main() {
 	// Load config from files and environment variables
 	setupViper()
 
-	// Initialize auth
-	auth.Init()
+	// Initialize database
+	dbPath := viper.GetString("database.path")
+	db, err := database.NewDatabase(dbPath)
+	if err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+	defer db.Close()
+
+	// Initialize services
+	userService := services.NewUserService(db)
+
+	// Initialize auth with user service
+	auth.Init(userService)
 
 	r := mux.NewRouter()
 
-	// Public routes
-	r.HandleFunc("/login", auth.LoginHandler)
-	r.HandleFunc("/logout", auth.LogoutHandler)
-	r.HandleFunc("/credits", credits.Handler)
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./web/static/"))))
+	// Public routes (no authentication required)
+	publicRouter := r.PathPrefix("/").Subrouter()
+	publicRouter.HandleFunc("/login", auth.LoginHandler).Methods("GET", "POST")
+	publicRouter.HandleFunc("/register", auth.RegisterHandler).Methods("GET", "POST")
+	publicRouter.HandleFunc("/logout", auth.LogoutHandler).Methods("POST", "GET")
+	publicRouter.HandleFunc("/credits", credits.Handler).Methods("GET")
+	publicRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./web/static/"))))
 
 	// Authenticated routes
 	authRouter := r.PathPrefix("/").Subrouter()
 	authRouter.Use(auth.AuthMiddleware)
 
+	// Profile route
+	authRouter.HandleFunc("/profile", auth.ProfileHandler).Methods("GET", "POST")
+
 	// API routes
 	apiRouter := authRouter.PathPrefix("/api/v1").Subrouter()
-	gameHandler := api.RegisterRoutes(apiRouter)
+	gameHandler := api.RegisterRoutes(apiRouter, userService) // Pass userService to API
 
 	// TTS routes (requires game handler for mystery data access)
 	api.RegisterTTSRoutes(apiRouter, gameHandler)
@@ -65,7 +88,12 @@ func main() {
 	// Serve the main page
 	authRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./web/templates/index.html")
-	})
+	}).Methods("GET")
+
+	// Redirect root to login if not authenticated
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+	}).Methods("GET")
 
 	// CORS setup for development
 	c := cors.New(cors.Options{
@@ -84,6 +112,7 @@ func main() {
 
 	log.Printf("🎭 GoFigure Web Server starting on port %s", port)
 	log.Printf("📍 Open http://localhost:%s in your browser", port)
+	log.Printf("🗄️ Database: %s", dbPath)
 
 	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatal("Failed to start server:", err)

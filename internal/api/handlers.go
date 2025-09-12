@@ -1,3 +1,4 @@
+// internal/api/handlers.go (Updated with user integration)
 package api
 
 import (
@@ -13,32 +14,39 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/tahcohcat/gofigure-web/internal/auth"
 	"github.com/tahcohcat/gofigure-web/internal/game"
 	"github.com/tahcohcat/gofigure-web/internal/logger"
+	"github.com/tahcohcat/gofigure-web/internal/services"
 )
 
 type GameSession struct {
-	Murder        *game.Murder
-	Timer         *time.Ticker
-	RemainingTime int
-	TimerEnabled  bool
-	GameOver      bool
+	UserID         int
+	Murder         *game.Murder
+	Timer          *time.Ticker
+	RemainingTime  int
+	TimerEnabled   bool
+	GameOver       bool
+	StartedAt      time.Time
+	QuestionsAsked int
 }
 
 type GameHandler struct {
-	sessions map[string]*GameSession // Store game sessions by ID
-	engine   *game.WebEngine        // Game engine instance
+	sessions    map[string]*GameSession // Store game sessions by ID
+	engine      *game.WebEngine         // Game engine instance
+	userService *services.UserService   // User service for database operations
 }
 
-func NewGameHandler() *GameHandler {
+func NewGameHandler(userService *services.UserService) *GameHandler {
 	engine, err := game.NewWebEngine()
 	if err != nil {
 		panic("Failed to create web engine: " + err.Error())
 	}
 
 	return &GameHandler{
-		sessions: make(map[string]*GameSession),
-		engine:   engine,
+		sessions:    make(map[string]*GameSession),
+		engine:      engine,
+		userService: userService,
 	}
 }
 
@@ -83,6 +91,13 @@ func (gh *GameHandler) ListMysteries(w http.ResponseWriter, r *http.Request) {
 
 // POST /api/v1/game/start - Start a new game with a mystery
 func (gh *GameHandler) StartGame(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from session
+	userID := auth.GetUserIDFromSession(r)
+	if userID == 0 {
+		http.Error(w, "Authentication required", http.StatusUnauthorized)
+		return
+	}
+
 	var req struct {
 		MysteryID string `json:"mystery_id"`
 	}
@@ -103,12 +118,20 @@ func (gh *GameHandler) StartGame(w http.ResponseWriter, r *http.Request) {
 	// Create and store the game session
 	sessionID := generateSessionID()
 	session := &GameSession{
-		Murder:        &murder,
-		RemainingTime: 3600, // 1 hour
-		TimerEnabled:  true,
-		GameOver:      false,
+		UserID:         userID,
+		Murder:         &murder,
+		RemainingTime:  3600, // 1 hour
+		TimerEnabled:   true,
+		GameOver:       false,
+		StartedAt:      time.Now(),
+		QuestionsAsked: 0,
 	}
 	gh.sessions[sessionID] = session
+
+	// Record game session start in database
+	if err := gh.userService.CreateGameSession(userID, req.MysteryID, sessionID); err != nil {
+		log.Printf("Warning: failed to record game session start: %v", err)
+	}
 
 	// Start the game timer
 	session.Timer = time.NewTicker(1 * time.Second)
@@ -119,6 +142,12 @@ func (gh *GameHandler) StartGame(w http.ResponseWriter, r *http.Request) {
 				if session.RemainingTime <= 0 {
 					session.GameOver = true
 					session.Timer.Stop()
+
+					// Auto-complete the game session as unsolved when time runs out
+					timeSpent := int(time.Since(session.StartedAt).Seconds())
+					if err := gh.userService.CompleteGameSession(sessionID, false, timeSpent, session.QuestionsAsked); err != nil {
+						log.Printf("Warning: failed to complete game session on timeout: %v", err)
+					}
 				}
 			}
 		}
@@ -164,6 +193,13 @@ func (gh *GameHandler) AskCharacter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Verify user owns this session
+	userID := auth.GetUserIDFromSession(r)
+	if session.UserID != userID {
+		http.Error(w, "Access denied", http.StatusForbidden)
+		return
+	}
+
 	if session.GameOver {
 		http.Error(w, "Game is over", http.StatusBadRequest)
 		return
@@ -189,22 +225,24 @@ func (gh *GameHandler) AskCharacter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Increment questions asked counter
+	session.QuestionsAsked++
+
 	// Calculate stress response
 	newStressLevel, stressState := calculateStressResponse(req.Question, character, req.CurrentStress)
 	stressChange := newStressLevel - req.CurrentStress
 
 	// Log the interaction for debugging
-	log.Printf("Character %s stress: %.1f -> %.1f (change: +%.1f) - State: %s",
-		character.Name, req.CurrentStress, newStressLevel, stressChange, stressState)
+	log.Printf("User %d - Character %s stress: %.1f -> %.1f (change: +%.1f) - State: %s",
+		userID, character.Name, req.CurrentStress, newStressLevel, stressChange, stressState)
 
-	logger.New().Info(fmt.Sprintf("Character %s stress: %.1f -> %.1f (change: +%.1f) - State: %s",
-		character.Name, req.CurrentStress, newStressLevel, stressChange, stressState))
+	logger.New().Info(fmt.Sprintf("User %d - Character %s stress: %.1f -> %.1f (change: +%.1f) - State: %s",
+		userID, character.Name, req.CurrentStress, newStressLevel, stressChange, stressState))
 
 	// Use the game engine to get character response
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	//todo: add stress to ai interaction
 	reply, err := gh.engine.AskCharacterQuestion(ctx, character, req.Question, *session.Murder)
 	if err != nil {
 		http.Error(w, "Failed to get character response: "+err.Error(), http.StatusInternalServerError)
@@ -225,6 +263,74 @@ func (gh *GameHandler) AskCharacter(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// POST /api/v1/game/{session}/accuse - Make an accusation
+func (gh *GameHandler) MakeAccusation(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sessionID := vars["session"]
+
+	session, exists := gh.sessions[sessionID]
+	if !exists {
+		http.Error(w, "Game session not found", http.StatusNotFound)
+		return
+	}
+
+	// Verify user owns this session
+	userID := auth.GetUserIDFromSession(r)
+	if session.UserID != userID {
+		http.Error(w, "Access denied", http.StatusForbidden)
+		return
+	}
+
+	if session.GameOver {
+		http.Error(w, "Game is already over", http.StatusBadRequest)
+		return
+	}
+
+	var req struct {
+		Suspect string `json:"suspect"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Check if the accusation is correct
+	correct := req.Suspect == session.Murder.Killer
+
+	// Mark game as over
+	session.GameOver = true
+	if session.Timer != nil {
+		session.Timer.Stop()
+	}
+
+	// Calculate time spent
+	timeSpent := int(time.Since(session.StartedAt).Seconds())
+
+	// Record game completion in database
+	if err := gh.userService.CompleteGameSession(sessionID, correct, timeSpent, session.QuestionsAsked); err != nil {
+		log.Printf("Warning: failed to complete game session: %v", err)
+	}
+
+	response := map[string]interface{}{
+		"correct":    correct,
+		"killer":     session.Murder.Killer,
+		"weapon":     session.Murder.Weapon,
+		"location":   session.Murder.Location,
+		"time_spent": timeSpent,
+		"questions":  session.QuestionsAsked,
+	}
+
+	if correct {
+		response["message"] = fmt.Sprintf("🎉 Congratulations! You correctly identified %s as the killer!", session.Murder.Killer)
+	} else {
+		response["message"] = fmt.Sprintf("❌ Sorry, that's incorrect. The real killer was %s.", session.Murder.Killer)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 // GET /api/v1/game/{session}/timer - Get remaining time
 func (gh *GameHandler) GetTimer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -233,6 +339,13 @@ func (gh *GameHandler) GetTimer(w http.ResponseWriter, r *http.Request) {
 	session, exists := gh.sessions[sessionID]
 	if !exists {
 		http.Error(w, "Game session not found", http.StatusNotFound)
+		return
+	}
+
+	// Verify user owns this session
+	userID := auth.GetUserIDFromSession(r)
+	if session.UserID != userID {
+		http.Error(w, "Access denied", http.StatusForbidden)
 		return
 	}
 
@@ -255,6 +368,13 @@ func (gh *GameHandler) ToggleTimer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Verify user owns this session
+	userID := auth.GetUserIDFromSession(r)
+	if session.UserID != userID {
+		http.Error(w, "Access denied", http.StatusForbidden)
+		return
+	}
+
 	session.TimerEnabled = !session.TimerEnabled
 
 	w.Header().Set("Content-Type", "application/json")
@@ -263,21 +383,41 @@ func (gh *GameHandler) ToggleTimer(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func RegisterRoutes(r *mux.Router) *GameHandler {
-	gh := NewGameHandler()
+// GET /api/v1/profile/stats - Get user stats (alternative endpoint)
+func (gh *GameHandler) GetUserStats(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserIDFromSession(r)
+	if userID == 0 {
+		http.Error(w, "Authentication required", http.StatusUnauthorized)
+		return
+	}
+
+	stats, err := gh.userService.GetUserStats(userID)
+	if err != nil {
+		http.Error(w, "Failed to get user stats", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stats)
+}
+
+func RegisterRoutes(r *mux.Router, userService *services.UserService) *GameHandler {
+	gh := NewGameHandler(userService)
 
 	r.HandleFunc("/mysteries", gh.ListMysteries).Methods("GET")
 	r.HandleFunc("/game/start", gh.StartGame).Methods("POST")
 	r.HandleFunc("/game/{session}/ask", gh.AskCharacter).Methods("POST")
+	r.HandleFunc("/game/{session}/accuse", gh.MakeAccusation).Methods("POST")
 	r.HandleFunc("/game/{session}/timer", gh.GetTimer).Methods("GET")
 	r.HandleFunc("/game/{session}/timer/toggle", gh.ToggleTimer).Methods("POST")
+	r.HandleFunc("/profile/stats", gh.GetUserStats).Methods("GET")
 
 	return gh
 }
 
 // Simple session ID generator (use UUID in production)
 func generateSessionID() string {
-	return "session_123" // Placeholder
+	return fmt.Sprintf("session_%d_%d", time.Now().UnixNano(), rand.Intn(1000))
 }
 
 // Add stress calculation function
