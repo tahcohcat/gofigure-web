@@ -8,5 +8,14 @@
     "numReplicas": 1,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
+  },
+  "volumes": {
+    "data": {
+      "mountPath" : "/data",
+      "sizeMB" : 256
+    }
+  },
+  "env": {
+    "DATABASE_URL": "sqlite:///data/mydb.sqlite"
   }
 }

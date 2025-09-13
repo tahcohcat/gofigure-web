@@ -79,6 +79,10 @@ func main() {
 	authRouter := r.PathPrefix("/").Subrouter()
 	authRouter.Use(auth.AuthMiddleware)
 
+	authRouter.HandleFunc("/profile", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./web/templates/profile.html")
+	}).Methods("GET")
+
 	// API routes with user service integration
 	apiRouter := authRouter.PathPrefix("/api/v1").Subrouter()
 	gameHandler := api.RegisterRoutes(apiRouter, userService)

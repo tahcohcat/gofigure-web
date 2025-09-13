@@ -10,15 +10,16 @@ import (
 	"math/rand"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/tahcohcat/gofigure-web/internal/auth"
 	"github.com/tahcohcat/gofigure-web/internal/game"
-	    "github.com/tahcohcat/gofigure-web/internal/logger"
-    "github.com/tahcohcat/gofigure-web/internal/models"
-    "github.com/tahcohcat/gofigure-web/internal/services"
+	"github.com/tahcohcat/gofigure-web/internal/logger"
+	"github.com/tahcohcat/gofigure-web/internal/models"
+	"github.com/tahcohcat/gofigure-web/internal/services"
 )
 
 type GameSession struct {
@@ -33,9 +34,10 @@ type GameSession struct {
 }
 
 type GameHandler struct {
-	sessions    map[string]*GameSession // Store game sessions by ID
-	engine      *game.WebEngine         // Game engine instance
-	userService *services.UserService   // User service for database operations
+	sessions           map[string]*GameSession // Store game sessions by ID
+	engine             *game.WebEngine         // Game engine instance
+	userService        *services.UserService   // User service for database operations
+	achievementService *services.AchievementService
 }
 
 func NewGameHandler(userService *services.UserService) *GameHandler {
@@ -44,10 +46,13 @@ func NewGameHandler(userService *services.UserService) *GameHandler {
 		panic("Failed to create web engine: " + err.Error())
 	}
 
+	achievementService := services.NewAchievementService(userService.GetDB())
+
 	return &GameHandler{
-		sessions:    make(map[string]*GameSession),
-		engine:      engine,
-		userService: userService,
+		sessions:           make(map[string]*GameSession),
+		engine:             engine,
+		userService:        userService,
+		achievementService: achievementService,
 	}
 }
 
@@ -229,6 +234,17 @@ func (gh *GameHandler) AskCharacter(w http.ResponseWriter, r *http.Request) {
 	// Increment questions asked counter
 	session.QuestionsAsked++
 
+	// Record question activity for achievements
+	achievementData := map[string]interface{}{
+		"character":       req.CharacterName,
+		"question":        req.Question,
+		"total_questions": session.QuestionsAsked,
+	}
+
+	if err := gh.achievementService.CheckAndUpdateAchievements(userID, "question_asked", achievementData); err != nil {
+		log.Printf("Warning: failed to check question achievements: %v", err)
+	}
+
 	// Calculate stress response
 	newStressLevel, stressState := calculateStressResponse(req.Question, character, req.CurrentStress)
 	stressChange := newStressLevel - req.CurrentStress
@@ -322,6 +338,46 @@ func (gh *GameHandler) MakeAccusation(w http.ResponseWriter, r *http.Request) {
 		"questions":  session.QuestionsAsked,
 	}
 
+	// Record stats
+	// Record game completion in database
+	if err := gh.userService.CompleteGameSession(sessionID, correct, timeSpent, session.QuestionsAsked); err != nil {
+		log.Printf("Warning: failed to complete game session: %v", err)
+	}
+
+	// Record activity
+	mysteryTitle := session.Murder.Title
+	if correct {
+		gh.achievementService.RecordActivity(userID, "mystery_solved",
+			fmt.Sprintf("Solved \"%s\" mystery", mysteryTitle),
+			fmt.Sprintf("Time: %d:%02d, Questions: %d", timeSpent/60, timeSpent%60, session.QuestionsAsked),
+			"🎯")
+
+		// Check for new personal record
+		userStats, _ := gh.userService.GetUserStats(userID)
+		if userStats.FastestSolve == 0 || timeSpent < userStats.FastestSolve {
+			gh.achievementService.RecordActivity(userID, "record_set",
+				fmt.Sprintf("New personal record: %d:%02d", timeSpent/60, timeSpent%60),
+				"", "⚡")
+		}
+	} else {
+		gh.achievementService.RecordActivity(userID, "mystery_attempted",
+			fmt.Sprintf("Attempted \"%s\" mystery", mysteryTitle),
+			fmt.Sprintf("Time: %d:%02d, Questions: %d", timeSpent/60, timeSpent%60, session.QuestionsAsked),
+			"🎯")
+	}
+
+	// Check and update achievements
+	achievementData := map[string]interface{}{
+		"time_spent":      timeSpent,
+		"questions_asked": session.QuestionsAsked,
+		"mystery_id":      sessionID, // You might want to store mystery ID in session
+		"correct":         correct,
+	}
+
+	if err := gh.achievementService.CheckAndUpdateAchievements(userID, "mystery_solved", achievementData); err != nil {
+		log.Printf("Warning: failed to check achievements: %v", err)
+	}
+
 	if correct {
 		response["message"] = fmt.Sprintf("🎉 Congratulations! You correctly identified %s as the killer!", session.Murder.Killer)
 	} else {
@@ -402,6 +458,214 @@ func (gh *GameHandler) GetUserStats(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(stats)
 }
 
+// GET /api/v1/profile/achievements - Get user achievements
+func (gh *GameHandler) GetUserAchievements(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserIDFromSession(r)
+	if userID == 0 {
+		http.Error(w, "Authentication required", http.StatusUnauthorized)
+		return
+	}
+
+	achievements, err := gh.achievementService.GetUserAchievements(userID)
+	if err != nil {
+		log.Printf("Failed to get user achievements: %v", err)
+		http.Error(w, "Failed to get achievements", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"achievements": achievements,
+	})
+}
+
+// GET /api/v1/profile/activities - Get recent user activities
+func (gh *GameHandler) GetUserActivities(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserIDFromSession(r)
+	if userID == 0 {
+		http.Error(w, "Authentication required", http.StatusUnauthorized)
+		return
+	}
+
+	limit := 10
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		if parsedLimit, err := strconv.Atoi(limitStr); err == nil && parsedLimit > 0 && parsedLimit <= 50 {
+			limit = parsedLimit
+		}
+	}
+
+	activities, err := gh.achievementService.GetRecentActivities(userID, limit)
+	if err != nil {
+		log.Printf("Failed to get user activities: %v", err)
+		http.Error(w, "Failed to get activities", http.StatusInternalServerError)
+		return
+	}
+
+	// Format activities for frontend
+	formattedActivities := make([]map[string]interface{}, len(activities))
+	for i, activity := range activities {
+		timeAgo := formatTimeAgo(activity.CreatedAt)
+		formattedActivities[i] = map[string]interface{}{
+			"id":         activity.ID,
+			"type":       activity.Type,
+			"title":      activity.Title,
+			"details":    activity.Details,
+			"icon":       activity.Icon,
+			"time":       timeAgo,
+			"created_at": activity.CreatedAt,
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"activities": formattedActivities,
+	})
+}
+
+// GET /api/v1/profile/full - Get complete user profile with stats, achievements, and activities
+func (gh *GameHandler) GetFullUserProfile(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserIDFromSession(r)
+	if userID == 0 {
+		http.Error(w, "Authentication required", http.StatusUnauthorized)
+		return
+	}
+
+	// Get user info
+	user, err := gh.userService.GetUserByID(userID)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	// Get user stats
+	stats, err := gh.userService.GetUserStats(userID)
+	if err != nil {
+		log.Printf("Failed to get user stats: %v", err)
+		http.Error(w, "Failed to get user stats", http.StatusInternalServerError)
+		return
+	}
+
+	// Get achievements
+	achievements, err := gh.achievementService.GetUserAchievements(userID)
+	if err != nil {
+		log.Printf("Failed to get user achievements: %v", err)
+		// Don't fail the whole request, just return empty achievements
+		achievements = []models.UserAchievementView{}
+	}
+
+	// Get recent activities
+	activities, err := gh.achievementService.GetRecentActivities(userID, 10)
+	if err != nil {
+		log.Printf("Failed to get user activities: %v", err)
+		activities = []models.GameActivity{}
+	}
+
+	// Calculate derived stats
+	successRate := 0
+	if stats.GamesPlayed > 0 {
+		successRate = int(float64(stats.GamesWon) / float64(stats.GamesPlayed) * 100)
+	}
+
+	badgesEarned := 0
+	for _, achievement := range achievements {
+		if achievement.Completed {
+			badgesEarned++
+		}
+	}
+
+	// Format fastest solve time
+	fastestSolve := "N/A"
+	if stats.FastestSolve > 0 {
+		minutes := stats.FastestSolve / 60
+		seconds := stats.FastestSolve % 60
+		fastestSolve = fmt.Sprintf("%d:%02d", minutes, seconds)
+	}
+
+	// Format total play time
+	totalPlayTimeHours := float64(stats.TotalPlayTime) / 3600.0
+
+	// Determine detective rank based on achievements and stats
+	detectiveRank := determineDetectiveRank(badgesEarned, stats.GamesWon, successRate)
+
+	// Format activities
+	formattedActivities := make([]map[string]interface{}, len(activities))
+	for i, activity := range activities {
+		timeAgo := formatTimeAgo(activity.CreatedAt)
+		formattedActivities[i] = map[string]interface{}{
+			"icon": activity.Icon,
+			"text": activity.Title,
+			"time": timeAgo,
+		}
+	}
+
+	response := map[string]interface{}{
+		"user": map[string]interface{}{
+			"id":           user.ID,
+			"username":     user.Username,
+			"email":        user.Email,
+			"display_name": user.DisplayName,
+			"created_at":   user.CreatedAt,
+		},
+		"stats": map[string]interface{}{
+			"games_played":    stats.GamesPlayed,
+			"games_won":       stats.GamesWon,
+			"success_rate":    successRate,
+			"fastest_solve":   fastestSolve,
+			"total_play_time": totalPlayTimeHours,
+			"badges_earned":   badgesEarned,
+			"detective_rank":  detectiveRank,
+		},
+		"achievements": achievements,
+		"activities":   formattedActivities,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// Helper function to determine detective rank
+func determineDetectiveRank(badgesEarned, gamesWon, successRate int) string {
+	if badgesEarned >= 10 && successRate >= 80 {
+		return "🕵️ Master Detective"
+	} else if badgesEarned >= 6 && gamesWon >= 15 {
+		return "🎖️ Senior Detective"
+	} else if badgesEarned >= 3 && gamesWon >= 5 {
+		return "👮 Detective"
+	} else if gamesWon >= 1 {
+		return "🔍 Junior Detective"
+	}
+	return "👤 Detective Trainee"
+}
+
+// Helper function to format time ago
+func formatTimeAgo(t time.Time) string {
+	duration := time.Since(t)
+
+	if duration < time.Minute {
+		return "Just now"
+	} else if duration < time.Hour {
+		minutes := int(duration.Minutes())
+		if minutes == 1 {
+			return "1 minute ago"
+		}
+		return fmt.Sprintf("%d minutes ago", minutes)
+	} else if duration < 24*time.Hour {
+		hours := int(duration.Hours())
+		if hours == 1 {
+			return "1 hour ago"
+		}
+		return fmt.Sprintf("%d hours ago", hours)
+	} else if duration < 7*24*time.Hour {
+		days := int(duration.Hours() / 24)
+		if days == 1 {
+			return "1 day ago"
+		}
+		return fmt.Sprintf("%d days ago", days)
+	} else {
+		return t.Format("Jan 2, 2006")
+	}
+}
+
 func RegisterRoutes(r *mux.Router, userService *services.UserService) *GameHandler {
 	gh := NewGameHandler(userService)
 
@@ -413,6 +677,10 @@ func RegisterRoutes(r *mux.Router, userService *services.UserService) *GameHandl
 	r.HandleFunc("/game/{session}/timer/toggle", gh.ToggleTimer).Methods("POST")
 	r.HandleFunc("/profile/stats", gh.GetUserStats).Methods("GET")
 
+	r.HandleFunc("/profile/full", gh.GetFullUserProfile).Methods("GET")
+	r.HandleFunc("/profile/achievements", gh.GetUserAchievements).Methods("GET")
+	r.HandleFunc("/profile/activities", gh.GetUserActivities).Methods("GET")
+
 	return gh
 }
 
@@ -422,77 +690,77 @@ func generateSessionID() string {
 }
 
 func GetUserProfile(userService *services.UserService) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        userID := auth.GetUserIDFromSession(r)
-        if userID == 0 {
-            http.Error(w, "Authentication required", http.StatusUnauthorized)
-            return
-        }
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID := auth.GetUserIDFromSession(r)
+		if userID == 0 {
+			http.Error(w, "Authentication required", http.StatusUnauthorized)
+			return
+		}
 
-        user, err := userService.GetUserByID(userID)
-        if err != nil {
-            http.Error(w, "User not found", http.StatusNotFound)
-            return
-        }
+		user, err := userService.GetUserByID(userID)
+		if err != nil {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+		}
 
-        stats, err := userService.GetUserStats(userID)
-        if err != nil {
-            http.Error(w, "Failed to get user stats", http.StatusInternalServerError)
-            return
-        }
+		stats, err := userService.GetUserStats(userID)
+		if err != nil {
+			http.Error(w, "Failed to get user stats", http.StatusInternalServerError)
+			return
+		}
 
-        w.Header().Set("Content-Type", "application/json")
-        json.NewEncoder(w).Encode(map[string]interface{}{
-            "user":  user,
-            "stats": stats,
-        })
-    }
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"user":  user,
+			"stats": stats,
+		})
+	}
 }
 
 func UpdateUserProfile(userService *services.UserService) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        userID := auth.GetUserIDFromSession(r)
-        if userID == 0 {
-            http.Error(w, "Authentication required", http.StatusUnauthorized)
-            return
-        }
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID := auth.GetUserIDFromSession(r)
+		if userID == 0 {
+			http.Error(w, "Authentication required", http.StatusUnauthorized)
+			return
+		}
 
-        var req models.ProfileUpdateRequest
-        if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-            http.Error(w, "Invalid request body", http.StatusBadRequest)
-            return
-        }
+		var req models.ProfileUpdateRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
 
-        if err := userService.UpdateProfile(userID, req.DisplayName, req.Email); err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
+		if err := userService.UpdateProfile(userID, req.DisplayName, req.Email); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-        w.WriteHeader(http.StatusOK)
-    }
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 func ChangePassword(userService *services.UserService) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        userID := auth.GetUserIDFromSession(r)
-        if userID == 0 {
-            http.Error(w, "Authentication required", http.StatusUnauthorized)
-            return
-        }
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID := auth.GetUserIDFromSession(r)
+		if userID == 0 {
+			http.Error(w, "Authentication required", http.StatusUnauthorized)
+			return
+		}
 
-        var req models.PasswordChangeRequest
-        if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-            http.Error(w, "Invalid request body", http.StatusBadRequest)
-            return
-        }
+		var req models.PasswordChangeRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
 
-        if err := userService.ChangePassword(userID, req.CurrentPassword, req.NewPassword); err != nil {
-            http.Error(w, err.Error(), http.StatusBadRequest)
-            return
-        }
+		if err := userService.ChangePassword(userID, req.CurrentPassword, req.NewPassword); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-        w.WriteHeader(http.StatusOK)
-    }
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 // Add stress calculation function

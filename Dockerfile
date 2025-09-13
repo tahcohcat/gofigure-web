@@ -16,6 +16,9 @@ RUN go mod download
 # Copy source code
 COPY . .
 
+RUN mkdir -p /data
+ENV DATABASE_PATH=/data/mydb.sqlite
+
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main cmd/server/main.go
 

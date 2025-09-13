@@ -73,6 +73,11 @@ func (s *UserService) CreateUser(req *models.CreateUserRequest) (*models.User, e
 	return user, nil
 }
 
+// todo: is this the right pattern...
+func (s *UserService) GetDB() *database.DB {
+	return s.db
+}
+
 // AuthenticateUser validates login credentials and returns the user
 func (s *UserService) AuthenticateUser(req *models.LoginRequest) (*models.User, error) {
 	user, err := s.GetUserByEmail(req.Email)
@@ -144,7 +149,6 @@ func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
 
 	return &user, nil
 }
-
 
 // UsernameExists checks if a username is already taken
 func (s *UserService) UsernameExists(username string) (bool, error) {
