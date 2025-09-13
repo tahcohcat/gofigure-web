@@ -496,6 +496,22 @@ class MysteryGame {
             e.preventDefault();
             profile.show();
         });
+
+        const profileBtn = document.querySelector('.profile-btn');
+        const dropdownContent = document.querySelector('.dropdown-content');
+
+        profileBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            dropdownContent.classList.toggle('show');
+        });
+
+        window.addEventListener('click', (event) => {
+            if (!event.target.matches('.profile-btn')) {
+                if (dropdownContent.classList.contains('show')) {
+                    dropdownContent.classList.remove('show');
+                }
+            }
+        });
     }
 
     showScreen(screenId) {

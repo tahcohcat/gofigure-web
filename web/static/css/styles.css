@@ -693,7 +693,7 @@ h2 {
     margin-top: 0.5rem;
 }
 
-.profile-dropdown:hover .dropdown-content {
+.dropdown-content.show {
     display: block;
 }
 
@@ -732,9 +732,7 @@ h2 {
     transition: transform 0.3s ease;
 }
 
-.profile-dropdown:hover .dropdown-caret {
-    transform: rotate(180deg);
-}
+
 
 /* --- Responsive Design --- */
 @media (max-width: 992px) {
@@ -811,7 +809,7 @@ h2 {
     margin-top: 0.5rem;
 }
 
-.profile-dropdown:hover .dropdown-content {
+.dropdown-content.show {
     display: block;
 }
 
@@ -849,9 +847,7 @@ h2 {
     transition: transform 0.3s ease;
 }
 
-.profile-dropdown:hover .dropdown-caret {
-    transform: rotate(180deg);
-}
+
 
 /* Achievement notification styles */
 .achievement-toast {
