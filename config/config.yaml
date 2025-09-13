@@ -1,4 +1,4 @@
-# config.yaml - Example configuration showing both LLM providers
+# config/config.yaml - Updated with database and auth settings
 
 # LLM Provider Selection
 llm:
@@ -17,6 +17,16 @@ openai:
   base_url: ""                  # Optional: for OpenAI-compatible APIs like Azure OpenAI
   max_tokens: 1000              # Optional: limit response length
   timeout: 30
+
+# Database Configuration
+database:
+  path: "./gofigure.db"         # SQLite database file path
+
+# Authentication Configuration
+auth:
+  session_secret: "your-super-secret-key-change-this-in-production-please"
+  # Optional: if you want to keep the old simple password login as fallback
+  # login_password: "your-simple-password"
 
 # Text-to-Speech Configuration
 tts:
@@ -43,6 +53,12 @@ openai:
   api_key: ""    # Not used when provider is ollama
   model: ""
   timeout: 30
+
+database:
+  path: "./gofigure.db"
+
+auth:
+  session_secret: "your-super-secret-key-change-this-in-production-please"
 
 tts:
   enabled: true

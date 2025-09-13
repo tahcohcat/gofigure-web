@@ -35,3 +35,4 @@ NOTES.md
 
 # Local configuration - DO NOT COMMIT
 config.local.yaml
+users.db
