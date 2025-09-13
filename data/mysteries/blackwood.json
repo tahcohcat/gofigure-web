@@ -50,7 +50,7 @@
   "characters": [
     {
       "name": "Lady Blackwood",
-      "sprite": "static/images/woman_white_hair.png",
+      "sprite": "static/images/characters/woman_white_hair.png",
       "personality": "Aristocratic, charming but calculating, becomes defensive when pressed",
       "knowledge": [
         "Claims she was in the drawing room during the murder",
@@ -64,7 +64,7 @@
     },
     {
       "name": "Mr. Graves the Butler",
-      "sprite": "static/images/concierge.png",
+      "sprite": "static/images/characters/concierge.png",
       "personality": "Professional, observant, loyal to the household",
       "knowledge": [
         "Found the body at approximately 9:50 PM",
@@ -78,7 +78,7 @@
     },
     {
       "name": "Clara the Maid",
-      "sprite": "static/images/woman_blond.png",
+      "sprite": "static/images/characters/woman_blond.png",
       "personality": "Nervous, gossipy, eager to please",
       "knowledge": [
         "Heard raised voices from the library around 9:45 PM",
@@ -92,7 +92,7 @@
     },
     {
       "name": "Colonel Hawthorne",
-      "sprite": "static/images/man_hat_glasses.png",
+      "sprite": "static/images/characters/man_hat_glasses.png",
       "personality": "Gruff, direct, old military friend of Lord Blackwood",
       "knowledge": [
         "Had a drink with Lord Blackwood who seemed troubled",
@@ -108,7 +108,7 @@
     },
     {
       "name": "Dr. Finch",
-      "sprite": "static/images/man_professor.png",
+      "sprite": "static/images/characters/man_professor.png",
       "personality": "Calm, logical",
       "knowledge": ["Knows cause of death was blunt force"],
       "reliable": true,
@@ -116,7 +116,7 @@
     },
     {
       "name": "Emily (the Niece)",
-      "sprite": "static/images/girl_blond.png",
+      "sprite": "static/images/characters/girl_blond.png",
       "personality": "Sweet, innocent but hiding something",
       "knowledge": ["Saw the butler near the study"],
       "reliable": false,
@@ -124,7 +124,7 @@
     },
     {
       "name": "Mr. Moss the Gardener",
-      "sprite": "static/images/man_redhat.png",
+      "sprite": "static/images/characters/man_redhat.png",
       "personality": "Simple, honest",
       "knowledge": ["Was outside during murder"],
       "reliable": true,
@@ -132,7 +132,7 @@
     },
     {
       "name": "Reverend Clarke",
-      "sprite": "static/images/man_waiter.png",
+      "sprite": "static/images/characters/man_waiter.png",
       "personality": "Pious, moralizing",
       "knowledge": ["Heard a scream"],
       "reliable": true,

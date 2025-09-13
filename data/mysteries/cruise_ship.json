@@ -50,7 +50,7 @@
   "characters": [
     {
       "name": "Captain Rodriguez",
-      "sprite": "static/images/man.png",
+      "sprite": "static/images/characters/man.png",
       "model_id": "character-a",
       "personality": "Authoritative, experienced, protective of his ship's reputation but hiding something",
       "knowledge": [
@@ -68,7 +68,7 @@
     },
     {
       "name": "Isabella Rossi",
-      "sprite": "static/images/woman.png",
+      "sprite": "static/images/characters/woman.png",
       "model_id": "character-b",
       "personality": "Elegant socialite, appears grief-stricken but overly dramatic about the chef's death",
       "knowledge": [
@@ -87,7 +87,7 @@
     },
     {
       "name": "Tommy Nakamura",
-      "sprite": "static/images/chef.png",
+      "sprite": "static/images/characters/chef.png",
       "model_id": "character-c",
       "personality": "Young, ambitious sous chef, clearly nervous and defensive",
       "knowledge": [
@@ -106,7 +106,7 @@
     },
     {
       "name": "Dr. Sarah Chen",
-      "sprite": "static/images/girl_longhair.png",
+      "sprite": "static/images/characters/girl_longhair.png",
       "model_id": "character-d",
       "personality": "Calm, logical ship's doctor, helpful but deflects personal questions",
       "knowledge": [
@@ -125,7 +125,7 @@
     },
     {
       "name": "Raj Abdul",
-      "sprite": "static/images/man_turban.png",
+      "sprite": "static/images/characters/man_turban.png",
       "model_id": "character-e",
       "personality": "Mysterious Asian passenger, evasive about his background",
       "knowledge": [
@@ -144,7 +144,7 @@
     },
     {
       "name": "Jenny Walsh",
-      "sprite": "static/images/girl_hoodie.png",
+      "sprite": "static/images/characters/girl_hoodie.png",
       "model_id": "character-f",
       "personality": "Cheerful cruise activities director, overly helpful but seems to know everyone's business",
       "knowledge": [
@@ -162,7 +162,7 @@
     },
     {
       "name": "Antonio Silva",
-      "sprite": "static/images/man_grey_beard.png",
+      "sprite": "static/images/characters/man_grey_beard.png",
       "model_id": "character-g",
       "personality": "Head of security, gruff and suspicious of everyone, takes his job seriously",
       "knowledge": [
@@ -180,7 +180,7 @@
     },
     {
       "name": "Eleanor Whitfield",
-      "sprite": "static/images/woman_bun.png",
+      "sprite": "static/images/characters/woman_bun.png",
       "model_id": "character-h",
       "personality": "Wealthy elderly passenger, sharp-witted despite her age, observant gossip",
       "knowledge": [

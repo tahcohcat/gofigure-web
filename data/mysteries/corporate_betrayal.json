@@ -38,7 +38,7 @@
   "characters": [
     {
       "name": "Marcus Webb",
-      "sprite": "static/images/man_hipster.png",
+      "sprite": "static/images/characters/man_hipster.png",
       "personality": "Smooth-talking CFO, appears helpful and concerned but is calculating and desperate to cover his tracks",
       "knowledge": [
         "The building security system requires executive keycards after 6 PM",
@@ -56,7 +56,7 @@
     },
     {
       "name": "Dr. Sarah Kim",
-      "sprite": "static/images/woman_earrings.png",
+      "sprite": "static/images/characters/woman_earrings.png",
       "personality": "Brilliant but anxious CTO, genuinely shocked by the murder and worried about the company's future",
       "knowledge": [
         "Victoria had been acting strange and paranoid lately",
@@ -73,7 +73,7 @@
     },
     {
       "name": "James Mitchell",
-      "sprite": "static/images/man_tie.png",
+      "sprite": "static/images/characters/man_tie.png",
       "personality": "Ambitious VP of Sales, frustrated by Victoria's leadership but genuinely innocent",
       "knowledge": [
         "Victoria was planning major layoffs after the merger",
@@ -90,7 +90,7 @@
     },
     {
       "name": "Elena Rodriguez",
-      "sprite": "static/images/woman_headband.png",
+      "sprite": "static/images/characters/woman_headband.png",
       "personality": "Sharp-witted Head of Legal, protective of company interests and suspicious of everyone's motives",
       "knowledge": [
         "Victoria received threatening emails about the merger",
@@ -107,7 +107,7 @@
     },
     {
       "name": "Miguel Santos",
-      "sprite": "static/images/policeman.png",
+      "sprite": "static/images/characters/policeman.png",
       "personality": "Observant security guard, knows everyone's habits and has noticed strange behavior lately",
       "knowledge": [
         "He saw someone enter Victoria's office around 8:45 PM",
