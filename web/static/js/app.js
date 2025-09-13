@@ -491,6 +491,11 @@ class MysteryGame {
                 alert('TTS test failed');
             }
         });
+
+        document.getElementById('profile-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            profile.show();
+        });
     }
 
     showScreen(screenId) {
@@ -523,6 +528,9 @@ class MysteryGame {
         document.getElementById('timer').style.color = '';
 
         this.showScreen('mystery-selection');
+    }
+    showProfile() {
+        profile.show();
     }
 }
 
@@ -595,9 +603,6 @@ const profile = {
                     </div>
                     
                     <div class="profile-actions">
-                        <button class="btn btn-primary" onclick="profile.openFullProfile()">
-                            View Full Profile
-                        </button>
                         <button class="btn btn-secondary" onclick="profile.close()">
                             Close
                         </button>
@@ -851,41 +856,7 @@ const profile = {
         `).join('');
     },
 
-    // Open full profile page in new tab
-    openFullProfile: function() {
-        // Save the profile page HTML as a separate route or open in new window
-        const profileWindow = window.open('', '_blank');
-        profileWindow.document.write(this.getFullProfileHTML());
-        profileWindow.document.close();
-
-        // Load the profile data in the new window
-        profileWindow.addEventListener('DOMContentLoaded', () => {
-            profileWindow.loadProfileData();
-        });
-    },
-
-    // Get full profile HTML (you could also make this a separate page)
-    getFullProfileHTML: function() {
-        // Return the HTML from your profile artifact
-        // This is a simplified version - in practice, you'd serve this as a separate page
-        return `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Detective Profile</title>
-                <style>
-                    /* Include the CSS from your profile artifact */
-                </style>
-            </head>
-            <body>
-                <!-- Include the HTML structure from your profile artifact -->
-                <script>
-                    // Include the JavaScript from your profile artifact
-                </script>
-            </body>
-            </html>
-        `;
-    },
+    
 
     // Close profile modal
     close: function() {
@@ -1014,216 +985,17 @@ const achievements = {
     }
 };
 
-// Update your existing game object to include profile functionality
-if (window.game) {
-    // Add profile button to user info dropdown
-    game.showProfile = function() {
-        profile.show();
-    };
 
-    // Update user info display to include profile link
-    game.updateUserInfo = function(userData) {
-        // Your existing user info update code...
-
-        // Add profile link to dropdown if it doesn't exist
-        const dropdown = document.querySelector('.dropdown-content');
-        if (dropdown && !dropdown.querySelector('.profile-link')) {
-            const profileLink = document.createElement('a');
-            profileLink.href = '#';
-            profileLink.className = 'profile-link';
-            profileLink.textContent = 'View Profile';
-            profileLink.onclick = (e) => {
-                e.preventDefault();
-                game.showProfile();
-            };
-
-            // Insert before logout link
-            const logoutLink = dropdown.querySelector('a[onclick*="logout"]');
-            if (logoutLink) {
-                dropdown.insertBefore(profileLink, logoutLink);
-            } else {
-                dropdown.appendChild(profileLink);
-            }
-        }
-    };
-
-    // Hook into existing game end logic
-    const originalEndGame = game.endGame || function() {};
-    game.endGame = function(result) {
-        originalEndGame.call(this, result);
-
-        // Check for new achievements after a brief delay
-        setTimeout(() => {
-            achievements.checkAfterGameEnd(result);
-        }, 2000);
-    };
-}
-
-// Add keyboard shortcut for profile (P key)
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'p' || e.key === 'P') {
-        if (!document.querySelector('.modal') && window.game) {
-            game.showProfile();
-        }
-    }
-});
-
-// Add this to your existing web/static/js/app.js
-
-// Achievement system integration for real-time notifications
-async function handleGameCompletion(result) {
-    try {
-        // Your existing game completion logic...
-
-        // After a brief delay, check for new achievements
-        setTimeout(async () => {
-            const response = await fetch('/api/v1/profile/achievements');
-            if (response.ok) {
-                const data = await response.json();
-
-                // Find recently earned achievements (within last 30 seconds)
-                const recentAchievements = data.achievements.filter(achievement => {
-                    if (!achievement.completed || !achievement.completed_at) return false;
-
-                    const completedTime = new Date(achievement.completed_at);
-                    const now = new Date();
-                    const timeDiff = now - completedTime;
-
-                    return timeDiff < 30000; // 30 seconds
-                });
-
-                // Show notifications for new achievements
-                recentAchievements.forEach((achievement, index) => {
-                    setTimeout(() => {
-                        showAchievementNotification(achievement);
-                    }, index * 1000); // Stagger notifications
-                });
-            }
-        }, 2000);
-
-    } catch (error) {
-        console.error('Error checking achievements:', error);
-    }
-}
-
-function showAchievementNotification(achievement) {
-    const notification = document.createElement('div');
-    notification.className = 'achievement-toast';
-    notification.innerHTML = `
-        <div style="display: flex; align-items: center;">
-            <div style="font-size: 2rem; margin-right: 1rem;">${achievement.icon}</div>
-            <div>
-                <div style="font-weight: 700; margin-bottom: 0.25rem;">🎉 Achievement Unlocked!</div>
-                <div style="font-weight: 600; margin-bottom: 0.25rem;">${achievement.title}</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">${achievement.description}</div>
-            </div>
-        </div>
-    `;
-
-    notification.onclick = () => {
-        notification.remove();
-        // Optionally open profile to show all achievements
-        if (window.profile) {
-            profile.show();
-        }
-    };
-
-    document.body.appendChild(notification);
-
-    // Play achievement sound (optional)
-    playAchievementSound();
-
-    // Remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 5000);
-}
-
-function playAchievementSound() {
-    // Create a simple achievement sound using Web Audio API
-    try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
-        oscillator.frequency.exponentialRampToValueAtTime(900, audioContext.currentTime + 0.3);
-
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.3);
-    } catch (error) {
-        // Fallback or ignore if Web Audio API is not supported
-        console.log('Achievement sound not available');
-    }
-}
-
-// Progress tracking functions
-function updateAchievementProgress(achievementId, progress) {
-    // Update UI elements that show progress
-    const progressBars = document.querySelectorAll(`[data-achievement="${achievementId}"] .progress-fill`);
-    progressBars.forEach(bar => {
-        const maxProgress = parseInt(bar.parentElement.dataset.max) || 100;
-        const percentage = (progress / maxProgress) * 100;
-        bar.style.width = `${Math.min(percentage, 100)}%`;
-    });
-}
-
-function trackQuestionAsked() {
-    // Call this each time a question is asked
-    fetch('/api/v1/profile/achievements')
-        .then(response => response.json())
-        .then(data => {
-            const interrogatorAchievement = data.achievements.find(a => a.id === 'interrogator');
-            if (interrogatorAchievement && !interrogatorAchievement.completed) {
-                updateAchievementProgress('interrogator', interrogatorAchievement.progress);
-            }
-        })
-        .catch(error => console.error('Error updating question progress:', error));
-}
-
-function trackMysteryProgress() {
-    // Update mystery completion progress
-    fetch('/api/v1/profile/achievements')
-        .then(response => response.json())
-        .then(data => {
-            const mysteryMavenAchievement = data.achievements.find(a => a.id === 'mystery-maven');
-            if (mysteryMavenAchievement && !mysteryMavenAchievement.completed) {
-                updateAchievementProgress('mystery-maven', mysteryMavenAchievement.progress);
-            }
-        })
-        .catch(error => console.error('Error updating mystery progress:', error));
-}
-
-// Hook these functions into your existing game logic
-if (window.game) {
-    // Update your existing game.askQuestion function to call trackQuestionAsked()
-    const originalAskQuestion = game.askQuestion || function() {};
-    game.askQuestion = function(...args) {
-        const result = originalAskQuestion.apply(this, args);
-        trackQuestionAsked();
-        return result;
-    };
-
-    // Update your existing game end function to call handleGameCompletion()
-    const originalEndGame = game.endGame || function() {};
-    game.endGame = function(result) {
-        const gameResult = originalEndGame.call(this, result);
-        handleGameCompletion(result);
-        return gameResult;
-    };
-}
 
 // Initialize game when page loads
 let game;
 document.addEventListener('DOMContentLoaded', () => {
     game = new MysteryGame();
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'p' || e.key === 'P') {
+            if (!document.querySelector('.modal') && window.game) {
+                game.showProfile();
+            }
+        }
+    });
 });
