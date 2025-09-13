@@ -526,6 +526,702 @@ class MysteryGame {
     }
 }
 
+// Add these functions to your existing web/static/js/app.js
+
+// Profile-related functionality
+const profile = {
+    // Show profile page
+    show: function() {
+        // Create profile modal or navigate to profile page
+        const profileModal = this.createProfileModal();
+        document.body.appendChild(profileModal);
+        this.loadProfileData();
+    },
+
+    // Create profile modal HTML
+    createProfileModal: function() {
+        const modal = document.createElement('div');
+        modal.id = 'profile-modal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content profile-modal-content">
+                <div class="modal-header">
+                    <h2>🕵️ Detective Profile</h2>
+                    <span class="close-modal" onclick="profile.close()">&times;</span>
+                </div>
+                
+                <div class="profile-content">
+                    <div class="profile-info">
+                        <div class="profile-avatar">🕵️</div>
+                        <h3 id="modal-profile-name">Loading...</h3>
+                        <p class="detective-rank" id="modal-detective-rank">🔍 Detective Trainee</p>
+                    </div>
+                    
+                    <div class="profile-stats-grid">
+                        <div class="profile-stat">
+                            <span class="stat-icon">🎯</span>
+                            <div class="stat-value" id="modal-games-played">-</div>
+                            <div class="stat-label">Cases</div>
+                        </div>
+                        <div class="profile-stat">
+                            <span class="stat-icon">✅</span>
+                            <div class="stat-value" id="modal-games-won">-</div>
+                            <div class="stat-label">Solved</div>
+                        </div>
+                        <div class="profile-stat">
+                            <span class="stat-icon">⚡</span>
+                            <div class="stat-value" id="modal-success-rate">-</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                        <div class="profile-stat">
+                            <span class="stat-icon">🏅</span>
+                            <div class="stat-value" id="modal-badges-earned">-</div>
+                            <div class="stat-label">Badges</div>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-section">
+                        <h4>🏆 Recent Achievements</h4>
+                        <div id="modal-achievements" class="achievements-preview">
+                            Loading achievements...
+                        </div>
+                    </div>
+                    
+                    <div class="profile-section">
+                        <h4>📋 Recent Activity</h4>
+                        <div id="modal-activities" class="activities-preview">
+                            Loading activities...
+                        </div>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <button class="btn btn-primary" onclick="profile.openFullProfile()">
+                            View Full Profile
+                        </button>
+                        <button class="btn btn-secondary" onclick="profile.close()">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add modal styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .profile-modal-content {
+                max-width: 600px;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            
+            .profile-info {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            
+            .profile-avatar {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2rem;
+                margin: 0 auto 1rem;
+                color: white;
+            }
+            
+            .detective-rank {
+                background: rgba(102, 126, 234, 0.1);
+                color: #667eea;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                display: inline-block;
+            }
+            
+            .profile-stats-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .profile-stat {
+                background: #f8f9ff;
+                padding: 1rem;
+                border-radius: 10px;
+                text-align: center;
+                border: 1px solid #e1e8f7;
+            }
+            
+            .profile-stat .stat-icon {
+                font-size: 1.5rem;
+                display: block;
+                margin-bottom: 0.5rem;
+            }
+            
+            .profile-stat .stat-value {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #667eea;
+                margin-bottom: 0.25rem;
+            }
+            
+            .profile-stat .stat-label {
+                font-size: 0.8rem;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .profile-section {
+                margin-bottom: 1.5rem;
+            }
+            
+            .profile-section h4 {
+                margin-bottom: 1rem;
+                color: #333;
+                border-bottom: 2px solid #e1e8f7;
+                padding-bottom: 0.5rem;
+            }
+            
+            .achievements-preview, .activities-preview {
+                max-height: 150px;
+                overflow-y: auto;
+            }
+            
+            .achievement-mini {
+                display: flex;
+                align-items: center;
+                padding: 0.5rem;
+                margin-bottom: 0.5rem;
+                background: white;
+                border-radius: 8px;
+                border: 1px solid #e1e8f7;
+            }
+            
+            .achievement-mini.earned {
+                border-color: #4ecdc4;
+                background: #f0fffe;
+            }
+            
+            .achievement-mini .badge-icon {
+                font-size: 1.2rem;
+                margin-right: 0.75rem;
+                width: 24px;
+                text-align: center;
+            }
+            
+            .achievement-mini .badge-info {
+                flex: 1;
+            }
+            
+            .achievement-mini .badge-title {
+                font-weight: 600;
+                font-size: 0.9rem;
+                margin-bottom: 0.2rem;
+            }
+            
+            .achievement-mini .badge-description {
+                font-size: 0.8rem;
+                color: #666;
+            }
+            
+            .activity-mini {
+                display: flex;
+                align-items: center;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .activity-mini:last-child {
+                border-bottom: none;
+            }
+            
+            .activity-mini .activity-icon {
+                font-size: 1.2rem;
+                margin-right: 0.75rem;
+                width: 24px;
+                text-align: center;
+            }
+            
+            .activity-mini .activity-text {
+                flex: 1;
+                font-size: 0.9rem;
+            }
+            
+            .activity-mini .activity-time {
+                font-size: 0.8rem;
+                color: #666;
+            }
+            
+            .profile-actions {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                margin-top: 2rem;
+                padding-top: 1rem;
+                border-top: 1px solid #e1e8f7;
+            }
+            
+            @media (max-width: 600px) {
+                .profile-stats-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                
+                .profile-actions {
+                    flex-direction: column;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        return modal;
+    },
+
+    // Load profile data from API
+    loadProfileData: async function() {
+        try {
+            const response = await fetch('/api/v1/profile/full');
+            if (!response.ok) throw new Error('Failed to load profile');
+
+            const data = await response.json();
+
+            // Update profile info
+            document.getElementById('modal-profile-name').textContent = data.user.display_name;
+            document.getElementById('modal-detective-rank').textContent = data.stats.detective_rank;
+
+            // Update stats
+            document.getElementById('modal-games-played').textContent = data.stats.games_played;
+            document.getElementById('modal-games-won').textContent = data.stats.games_won;
+            document.getElementById('modal-success-rate').textContent = data.stats.success_rate + '%';
+            document.getElementById('modal-badges-earned').textContent = data.stats.badges_earned;
+
+            // Update achievements
+            this.renderAchievements(data.achievements.slice(0, 5)); // Show first 5
+
+            // Update activities
+            this.renderActivities(data.activities.slice(0, 5)); // Show first 5
+
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            document.getElementById('modal-profile-name').textContent = 'Error loading profile';
+        }
+    },
+
+    // Render achievements preview
+    renderAchievements: function(achievements) {
+        const container = document.getElementById('modal-achievements');
+
+        if (!achievements || achievements.length === 0) {
+            container.innerHTML = '<p>No achievements yet. Keep investigating!</p>';
+            return;
+        }
+
+        container.innerHTML = achievements.map(achievement => `
+            <div class="achievement-mini ${achievement.completed ? 'earned' : ''}">
+                <span class="badge-icon" style="${achievement.completed ? '' : 'filter: grayscale(100%); opacity: 0.6;'}">${achievement.icon}</span>
+                <div class="badge-info">
+                    <div class="badge-title">${achievement.title}</div>
+                    <div class="badge-description">${achievement.description}</div>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    // Render activities preview
+    renderActivities: function(activities) {
+        const container = document.getElementById('modal-activities');
+
+        if (!activities || activities.length === 0) {
+            container.innerHTML = '<p>No recent activity.</p>';
+            return;
+        }
+
+        container.innerHTML = activities.map(activity => `
+            <div class="activity-mini">
+                <span class="activity-icon">${activity.icon}</span>
+                <span class="activity-text">${activity.text}</span>
+                <span class="activity-time">${activity.time}</span>
+            </div>
+        `).join('');
+    },
+
+    // Open full profile page in new tab
+    openFullProfile: function() {
+        // Save the profile page HTML as a separate route or open in new window
+        const profileWindow = window.open('', '_blank');
+        profileWindow.document.write(this.getFullProfileHTML());
+        profileWindow.document.close();
+
+        // Load the profile data in the new window
+        profileWindow.addEventListener('DOMContentLoaded', () => {
+            profileWindow.loadProfileData();
+        });
+    },
+
+    // Get full profile HTML (you could also make this a separate page)
+    getFullProfileHTML: function() {
+        // Return the HTML from your profile artifact
+        // This is a simplified version - in practice, you'd serve this as a separate page
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Detective Profile</title>
+                <style>
+                    /* Include the CSS from your profile artifact */
+                </style>
+            </head>
+            <body>
+                <!-- Include the HTML structure from your profile artifact -->
+                <script>
+                    // Include the JavaScript from your profile artifact
+                </script>
+            </body>
+            </html>
+        `;
+    },
+
+    // Close profile modal
+    close: function() {
+        const modal = document.getElementById('profile-modal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+};
+
+// Achievement notification system
+const achievements = {
+    // Show achievement earned notification
+    showEarned: function(achievement) {
+        const notification = document.createElement('div');
+        notification.className = 'achievement-notification';
+        notification.innerHTML = `
+            <div class="achievement-content">
+                <div class="achievement-icon">${achievement.icon}</div>
+                <div class="achievement-text">
+                    <div class="achievement-title">Achievement Unlocked!</div>
+                    <div class="achievement-name">${achievement.title}</div>
+                    <div class="achievement-desc">${achievement.description}</div>
+                </div>
+            </div>
+        `;
+
+        // Add notification styles if not already added
+        if (!document.getElementById('achievement-styles')) {
+            const style = document.createElement('style');
+            style.id = 'achievement-styles';
+            style.textContent = `
+                .achievement-notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+                    color: white;
+                    padding: 1rem;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    z-index: 10000;
+                    max-width: 350px;
+                    animation: slideInRight 0.5s ease-out, fadeOut 0.5s ease-in 4.5s forwards;
+                }
+                
+                .achievement-content {
+                    display: flex;
+                    align-items: center;
+                }
+                
+                .achievement-icon {
+                    font-size: 2rem;
+                    margin-right: 1rem;
+                }
+                
+                .achievement-title {
+                    font-weight: 700;
+                    font-size: 0.9rem;
+                    margin-bottom: 0.25rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                
+                .achievement-name {
+                    font-weight: 600;
+                    font-size: 1.1rem;
+                    margin-bottom: 0.25rem;
+                }
+                
+                .achievement-desc {
+                    font-size: 0.85rem;
+                    opacity: 0.9;
+                }
+                
+                @keyframes slideInRight {
+                    from {
+                        opacity: 0;
+                        transform: translateX(100%);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                
+                @keyframes fadeOut {
+                    to {
+                        opacity: 0;
+                        transform: translateX(100%);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(notification);
+
+        // Remove notification after animation
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 5000);
+    },
+
+    // Check for new achievements after game events
+    checkAfterGameEnd: async function(gameResult) {
+        try {
+            const response = await fetch('/api/v1/profile/achievements');
+            if (!response.ok) return;
+
+            const data = await response.json();
+            const recentAchievements = data.achievements.filter(a =>
+                a.completed && a.completed_at &&
+                new Date(a.completed_at) > new Date(Date.now() - 10000) // Last 10 seconds
+            );
+
+            recentAchievements.forEach(achievement => {
+                setTimeout(() => this.showEarned(achievement), 1000);
+            });
+
+        } catch (error) {
+            console.error('Error checking achievements:', error);
+        }
+    }
+};
+
+// Update your existing game object to include profile functionality
+if (window.game) {
+    // Add profile button to user info dropdown
+    game.showProfile = function() {
+        profile.show();
+    };
+
+    // Update user info display to include profile link
+    game.updateUserInfo = function(userData) {
+        // Your existing user info update code...
+
+        // Add profile link to dropdown if it doesn't exist
+        const dropdown = document.querySelector('.dropdown-content');
+        if (dropdown && !dropdown.querySelector('.profile-link')) {
+            const profileLink = document.createElement('a');
+            profileLink.href = '#';
+            profileLink.className = 'profile-link';
+            profileLink.textContent = 'View Profile';
+            profileLink.onclick = (e) => {
+                e.preventDefault();
+                game.showProfile();
+            };
+
+            // Insert before logout link
+            const logoutLink = dropdown.querySelector('a[onclick*="logout"]');
+            if (logoutLink) {
+                dropdown.insertBefore(profileLink, logoutLink);
+            } else {
+                dropdown.appendChild(profileLink);
+            }
+        }
+    };
+
+    // Hook into existing game end logic
+    const originalEndGame = game.endGame || function() {};
+    game.endGame = function(result) {
+        originalEndGame.call(this, result);
+
+        // Check for new achievements after a brief delay
+        setTimeout(() => {
+            achievements.checkAfterGameEnd(result);
+        }, 2000);
+    };
+}
+
+// Add keyboard shortcut for profile (P key)
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'p' || e.key === 'P') {
+        if (!document.querySelector('.modal') && window.game) {
+            game.showProfile();
+        }
+    }
+});
+
+// Add this to your existing web/static/js/app.js
+
+// Achievement system integration for real-time notifications
+async function handleGameCompletion(result) {
+    try {
+        // Your existing game completion logic...
+
+        // After a brief delay, check for new achievements
+        setTimeout(async () => {
+            const response = await fetch('/api/v1/profile/achievements');
+            if (response.ok) {
+                const data = await response.json();
+
+                // Find recently earned achievements (within last 30 seconds)
+                const recentAchievements = data.achievements.filter(achievement => {
+                    if (!achievement.completed || !achievement.completed_at) return false;
+
+                    const completedTime = new Date(achievement.completed_at);
+                    const now = new Date();
+                    const timeDiff = now - completedTime;
+
+                    return timeDiff < 30000; // 30 seconds
+                });
+
+                // Show notifications for new achievements
+                recentAchievements.forEach((achievement, index) => {
+                    setTimeout(() => {
+                        showAchievementNotification(achievement);
+                    }, index * 1000); // Stagger notifications
+                });
+            }
+        }, 2000);
+
+    } catch (error) {
+        console.error('Error checking achievements:', error);
+    }
+}
+
+function showAchievementNotification(achievement) {
+    const notification = document.createElement('div');
+    notification.className = 'achievement-toast';
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center;">
+            <div style="font-size: 2rem; margin-right: 1rem;">${achievement.icon}</div>
+            <div>
+                <div style="font-weight: 700; margin-bottom: 0.25rem;">🎉 Achievement Unlocked!</div>
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">${achievement.title}</div>
+                <div style="font-size: 0.9rem; opacity: 0.9;">${achievement.description}</div>
+            </div>
+        </div>
+    `;
+
+    notification.onclick = () => {
+        notification.remove();
+        // Optionally open profile to show all achievements
+        if (window.profile) {
+            profile.show();
+        }
+    };
+
+    document.body.appendChild(notification);
+
+    // Play achievement sound (optional)
+    playAchievementSound();
+
+    // Remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+function playAchievementSound() {
+    // Create a simple achievement sound using Web Audio API
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+        oscillator.frequency.exponentialRampToValueAtTime(900, audioContext.currentTime + 0.3);
+
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+        // Fallback or ignore if Web Audio API is not supported
+        console.log('Achievement sound not available');
+    }
+}
+
+// Progress tracking functions
+function updateAchievementProgress(achievementId, progress) {
+    // Update UI elements that show progress
+    const progressBars = document.querySelectorAll(`[data-achievement="${achievementId}"] .progress-fill`);
+    progressBars.forEach(bar => {
+        const maxProgress = parseInt(bar.parentElement.dataset.max) || 100;
+        const percentage = (progress / maxProgress) * 100;
+        bar.style.width = `${Math.min(percentage, 100)}%`;
+    });
+}
+
+function trackQuestionAsked() {
+    // Call this each time a question is asked
+    fetch('/api/v1/profile/achievements')
+        .then(response => response.json())
+        .then(data => {
+            const interrogatorAchievement = data.achievements.find(a => a.id === 'interrogator');
+            if (interrogatorAchievement && !interrogatorAchievement.completed) {
+                updateAchievementProgress('interrogator', interrogatorAchievement.progress);
+            }
+        })
+        .catch(error => console.error('Error updating question progress:', error));
+}
+
+function trackMysteryProgress() {
+    // Update mystery completion progress
+    fetch('/api/v1/profile/achievements')
+        .then(response => response.json())
+        .then(data => {
+            const mysteryMavenAchievement = data.achievements.find(a => a.id === 'mystery-maven');
+            if (mysteryMavenAchievement && !mysteryMavenAchievement.completed) {
+                updateAchievementProgress('mystery-maven', mysteryMavenAchievement.progress);
+            }
+        })
+        .catch(error => console.error('Error updating mystery progress:', error));
+}
+
+// Hook these functions into your existing game logic
+if (window.game) {
+    // Update your existing game.askQuestion function to call trackQuestionAsked()
+    const originalAskQuestion = game.askQuestion || function() {};
+    game.askQuestion = function(...args) {
+        const result = originalAskQuestion.apply(this, args);
+        trackQuestionAsked();
+        return result;
+    };
+
+    // Update your existing game end function to call handleGameCompletion()
+    const originalEndGame = game.endGame || function() {};
+    game.endGame = function(result) {
+        const gameResult = originalEndGame.call(this, result);
+        handleGameCompletion(result);
+        return gameResult;
+    };
+}
+
 // Initialize game when page loads
 let game;
 document.addEventListener('DOMContentLoaded', () => {
