@@ -3,23 +3,23 @@
   "difficulty": "Medium",
   "credits": [
     {
-      "image_path": "static/images/man_hipster.png",
+      "image_path": "static/images/characters/man_hipster.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-hipster\" title=\"man hipster icons\">Man hipster icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/woman_earrings.png",
+      "image_path": "static/images/characters/woman_earrings.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/woman-earrings\" title=\"woman earrings icons\">Woman earrings icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/man_tie.png",
+      "image_path": "static/images/characters/man_tie.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-tie\" title=\"man tie icons\">Man tie icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/woman_headband.png",
+      "image_path": "static/images/characters/woman_headband.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/woman-headband\" title=\"woman headband icons\">Woman headband icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/policeman.png",
+      "image_path": "static/images/characters/policeman.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/policeman\" title=\"policeman icons\">Policeman icons created by Freepik - Flaticon</a>"
     }
   ],

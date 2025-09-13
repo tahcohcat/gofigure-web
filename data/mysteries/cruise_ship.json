@@ -3,35 +3,35 @@
   "difficulty": "Hard",
   "credits": [
     {
-      "image_path": "static/images/man.png",
+      "image_path": "static/images/characters/man.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man\" title=\"man icons\">Man icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/woman.png",
+      "image_path": "static/images/characters/woman.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/woman\" title=\"woman icons\">Woman icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/chef.png",
+      "image_path": "static/images/characters/chef.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/chef\" title=\"chef icons\">Chef icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/girl_longhair.png",
+      "image_path": "static/images/characters/girl_longhair.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/girl-longhair\" title=\"girl longhair icons\">Girl longhair icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/man_turban.png",
+      "image_path": "static/images/characters/man_turban.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-turban\" title=\"man turban icons\">Man turban icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/girl_hoodie.png",
+      "image_path": "static/images/characters/girl_hoodie.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/girl-hoodie\" title=\"girl hoodie icons\">Girl hoodie icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/man_grey_beard.png",
+      "image_path": "static/images/characters/man_grey_beard.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-grey-beard\" title=\"man grey beard icons\">Man grey beard icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/woman_bun.png",
+      "image_path": "static/images/characters/woman_bun.png",
       "credit_html": "<a href=\"https.www.flaticon.com/free-icons/woman-bun\" title=\"woman bun icons\">Woman bun icons created by Freepik - Flaticon</a>"
     }
   ],

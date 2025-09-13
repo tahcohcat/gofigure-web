@@ -3,35 +3,35 @@
   "difficulty": "Medium",
   "credits": [
     {
-      "image_path": "static/images/woman_white_hair.png",
+      "image_path": "static/images/characters/woman_white_hair.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/woman-white-hair\" title=\"woman white hair icons\">Woman white hair icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/concierge.png",
+      "image_path": "static/images/characters/concierge.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/concierge\" title=\"concierge icons\">Concierge icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/woman_blond.png",
+      "image_path": "static/images/characters/woman_blond.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/woman-blond\" title=\"woman blond icons\">Woman blond icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/man_hat_glasses.png",
+      "image_path": "static/images/characters/man_hat_glasses.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-hat-glasses\" title=\"man hat glasses icons\">Man hat glasses icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/man_professor.png",
+      "image_path": "static/images/characters/man_professor.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-professor\" title=\"man professor icons\">Man professor icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/girl_blond.png",
+      "image_path": "static/images/characters/girl_blond.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/girl-blond\" title=\"girl blond icons\">Girl blond icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/man_redhat.png",
+      "image_path": "static/images/characters/man_redhat.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-redhat\" title=\"man redhat icons\">Man redhat icons created by Freepik - Flaticon</a>"
     },
     {
-      "image_path": "static/images/man_waiter.png",
+      "image_path": "static/images/characters/man_waiter.png",
       "credit_html": "<a href=\"https://www.flaticon.com/free-icons/man-waiter\" title=\"man waiter icons\">Man waiter icons created by Freepik - Flaticon</a>"
     }
   ],
