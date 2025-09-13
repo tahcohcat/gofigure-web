@@ -12,6 +12,24 @@
         <header>
             <h1>🎭 GoFigure</h1>
             <p class="subtitle">Interactive Murder Mystery Game</p>
+            <div class="user-info hidden">
+                <div class="profile-dropdown">
+                    <button class="profile-btn">
+                        <img src="/static/images/boy.png" alt="User Avatar" class="avatar">
+                        <span id="user-display-name"></span>
+                        <span class="dropdown-caret">▼</span>
+                    </button>
+                    <div class="dropdown-content">
+                        <div class="stats">
+                            <div class="stat-item"><strong>Games Played:</strong> <span id="stats-games-played"></span></div>
+                            <div class="stat-item"><strong>Games Won:</strong> <span id="stats-games-won"></span></div>
+                            <div class="stat-item"><strong>Total Play Time:</strong> <span id="stats-play-time"></span>m</div>
+                            <div class="stat-item"><strong>Fastest Solve:</strong> <span id="stats-fastest-solve"></span></div>
+                        </div>
+                        <a href="#" onclick="game.logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
         </header>
         <img src="/static/images/banners/banner.jpg" alt="Website Banner" class="main-banner">
 

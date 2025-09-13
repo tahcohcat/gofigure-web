@@ -1,4 +1,3 @@
-<!-- web/templates/register.html - Simple version to test -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,107 +6,281 @@
     <title>Register - GoFigure</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 400px;
-            margin: 50px auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
             padding: 20px;
-            background: #f5f5f5;
-        }
-        .register-form {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="email"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
             box-sizing: border-box;
         }
+
+        .register-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #4a4e69;
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a4e69;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #6c63ff;
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .password-requirements {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.25rem;
+            padding-left: 0.5rem;
+        }
+
         button {
             width: 100%;
-            padding: 12px;
-            background: #28a745;
-            color: white;
+            padding: 0.875rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #6c63ff, #5a52ff);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 16px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+
         button:hover {
-            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(108, 99, 255, 0.3);
         }
+
+        button:active {
+            transform: translateY(0);
+        }
+
         .error {
-            color: red;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #ffe6e6;
-            border-radius: 4px;
+            background: #fff5f5;
+            color: #e53e3e;
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #e53e3e;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
+
         .login-link {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e1e5e9;
         }
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
+
+        .login-link a {
+            color: #6c63ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
         }
-        .form-help {
-            font-size: 12px;
+
+        .login-link a:hover {
+            color: #5a52ff;
+            text-decoration: underline;
+        }
+
+        .feature-list {
+            background: #f8f9ff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-list h3 {
+            margin: 0 0 0.75rem 0;
+            color: #4a4e69;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .feature-list ul {
+            margin: 0;
+            padding-left: 1.25rem;
             color: #666;
-            margin-top: 3px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .feature-list li {
+            margin-bottom: 0.25rem;
+        }
+
+        @media (max-width: 480px) {
+            .register-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
         }
     </style>
 </head>
 <body>
-<div class="register-form">
-    <h1>🎭 Create Account</h1>
+<div class="register-container">
+    <div class="header">
+        <h1>🎭 Join GoFigure</h1>
+        <p>Create your detective account</p>
+    </div>
+
+    <div class="feature-list">
+        <h3>🕵️ What you'll get:</h3>
+        <ul>
+            <li>Access to multiple murder mysteries</li>
+            <li>Interactive character questioning</li>
+            <li>Text-to-speech character voices</li>
+            <li>Progress tracking and hints system</li>
+        </ul>
+    </div>
 
     {{if .Error}}
-    <div class="error">{{.Error}}</div>
+    <div class="error">
+        ⚠️ {{.Error}}
+    </div>
     {{end}}
 
     <form method="POST" action="/register">
         <div class="form-group">
             <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required minlength="3">
-            <div class="form-help">At least 3 characters</div>
-        </div>
-
-        <div class="form-group">
-            <label for="display_name">Display Name:</label>
-            <input type="text" id="display_name" name="display_name" required>
-            <div class="form-help">How you'll appear in the game</div>
+            <input type="text" id="username" name="username" required
+                   placeholder="Choose a detective name"
+                   value="{{.Username}}"
+                   minlength="3" maxlength="40">
         </div>
 
         <div class="form-group">
             <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-            <div class="form-help">For account recovery</div>
+            <input type="text" id="email" name="email" required
+                   placeholder="Enter your email"
+                   value="{{.Email}}">
         </div>
 
         <div class="form-group">
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required minlength="6">
-            <div class="form-help">At least 6 characters</div>
+            <input type="password" id="password" name="password" required
+                   placeholder="Create a secure password"
+                   minlength="6">
+            <div class="password-requirements">
+                Minimum 6 characters required
+            </div>
         </div>
 
-        <button type="submit">Create Account</button>
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password:</label>
+            <input type="password" id="confirm_password" name="confirm_password" required
+                   placeholder="Confirm your password">
+        </div>
+
+        <button type="submit">🚀 Create Account</button>
     </form>
 
     <div class="login-link">
-        <p>Already have an account? <a href="/login">Login here</a></p>
+        Already have an account? <a href="/login">Sign in here</a>
     </div>
 </div>
+
+<script>
+    // Add some basic client-side validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            return false;
+        }
+
+        if (password.length < 6) {
+            e.preventDefault();
+            alert('Password must be at least 6 characters long!');
+            return false;
+        }
+    });
+
+    // Add real-time password confirmation check
+    document.getElementById('confirm_password').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+
+        if (confirmPassword && password !== confirmPassword) {
+            this.style.borderColor = '#e53e3e';
+            this.style.boxShadow = '0 0 0 3px rgba(229, 62, 62, 0.1)';
+        } else if (confirmPassword) {
+            this.style.borderColor = '#28a745';
+            this.style.boxShadow = '0 0 0 3px rgba(40, 167, 69, 0.1)';
+        } else {
+            this.style.borderColor = '#e1e5e9';
+            this.style.boxShadow = 'none';
+        }
+    });
+</script>
 </body>
 </html>

@@ -16,8 +16,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/tahcohcat/gofigure-web/internal/auth"
 	"github.com/tahcohcat/gofigure-web/internal/game"
-	"github.com/tahcohcat/gofigure-web/internal/logger"
-	"github.com/tahcohcat/gofigure-web/internal/services"
+	    "github.com/tahcohcat/gofigure-web/internal/logger"
+    "github.com/tahcohcat/gofigure-web/internal/models"
+    "github.com/tahcohcat/gofigure-web/internal/services"
 )
 
 type GameSession struct {
@@ -418,6 +419,80 @@ func RegisterRoutes(r *mux.Router, userService *services.UserService) *GameHandl
 // Simple session ID generator (use UUID in production)
 func generateSessionID() string {
 	return fmt.Sprintf("session_%d_%d", time.Now().UnixNano(), rand.Intn(1000))
+}
+
+func GetUserProfile(userService *services.UserService) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        userID := auth.GetUserIDFromSession(r)
+        if userID == 0 {
+            http.Error(w, "Authentication required", http.StatusUnauthorized)
+            return
+        }
+
+        user, err := userService.GetUserByID(userID)
+        if err != nil {
+            http.Error(w, "User not found", http.StatusNotFound)
+            return
+        }
+
+        stats, err := userService.GetUserStats(userID)
+        if err != nil {
+            http.Error(w, "Failed to get user stats", http.StatusInternalServerError)
+            return
+        }
+
+        w.Header().Set("Content-Type", "application/json")
+        json.NewEncoder(w).Encode(map[string]interface{}{
+            "user":  user,
+            "stats": stats,
+        })
+    }
+}
+
+func UpdateUserProfile(userService *services.UserService) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        userID := auth.GetUserIDFromSession(r)
+        if userID == 0 {
+            http.Error(w, "Authentication required", http.StatusUnauthorized)
+            return
+        }
+
+        var req models.ProfileUpdateRequest
+        if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+            http.Error(w, "Invalid request body", http.StatusBadRequest)
+            return
+        }
+
+        if err := userService.UpdateProfile(userID, req.DisplayName, req.Email); err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+
+        w.WriteHeader(http.StatusOK)
+    }
+}
+
+func ChangePassword(userService *services.UserService) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        userID := auth.GetUserIDFromSession(r)
+        if userID == 0 {
+            http.Error(w, "Authentication required", http.StatusUnauthorized)
+            return
+        }
+
+        var req models.PasswordChangeRequest
+        if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+            http.Error(w, "Invalid request body", http.StatusBadRequest)
+            return
+        }
+
+        if err := userService.ChangePassword(userID, req.CurrentPassword, req.NewPassword); err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
+            return
+        }
+
+        w.WriteHeader(http.StatusOK)
+    }
 }
 
 // Add stress calculation function

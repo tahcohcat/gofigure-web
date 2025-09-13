@@ -8,6 +8,7 @@ class MysteryGame {
         this.ttsEnabled = true;
         this.hintsEnabled = true;
         this.currentUser = null;
+        this.userStats = null;
 
         this.init();
     }
@@ -15,19 +16,23 @@ class MysteryGame {
     async init() {
         await this.loadMysteries();
         this.setupEventListeners();
-        this.checkAuthStatus();
+        await this.checkAuthStatus();
     }
 
     async checkAuthStatus() {
         try {
-            const response = await fetch('/profile', {
+            const response = await fetch('/api/v1/auth/profile', {
                 headers: { 'Accept': 'application/json' }
             });
 
             if (response.ok) {
                 const data = await response.json();
+                console.log('Profile data:', data);
                 this.currentUser = data.user;
+                this.userStats = data.stats;
                 this.showUserInfo();
+            } else {
+                console.log('checkAuthStatus response not ok:', response.status);
             }
         } catch (error) {
             console.log('Not authenticated or error checking auth:', error);
@@ -35,18 +40,22 @@ class MysteryGame {
     }
 
     showUserInfo() {
-        if (this.currentUser) {
-            // Add user info to header
-            const header = document.querySelector('header');
-            const userInfo = document.createElement('div');
-            userInfo.className = 'user-info';
-            userInfo.innerHTML = `
-                <span>Welcome, ${this.currentUser.display_name}! 🕵️</span>
-                <a href="/profile" class="btn btn-secondary btn-sm">Profile</a>
-                <button onclick="this.logout()" class="btn btn-secondary btn-sm">Logout</button>
-            `;
-            header.appendChild(userInfo);
+        console.log('Inside showUserInfo');
+        const user = this.currentUser;
+        const stats = this.userStats;
+
+        if (!user || !stats) {
+            console.log('User or stats is null, returning.');
+            return;
         }
+
+        document.getElementById('user-display-name').textContent = user.display_name;
+        document.getElementById('stats-games-played').textContent = stats.games_played;
+        document.getElementById('stats-games-won').textContent = stats.games_won;
+        document.getElementById('stats-play-time').textContent = Math.floor(stats.total_play_time / 60);
+        document.getElementById('stats-fastest-solve').textContent = stats.fastest_solve > 0 ? Math.floor(stats.fastest_solve / 60) + 'm' : 'N/A';
+
+        document.querySelector('.user-info').classList.remove('hidden');
     }
 
     async logout() {
@@ -76,9 +85,11 @@ class MysteryGame {
             const mysteryCard = document.createElement('div');
             mysteryCard.className = 'mystery-card';
             mysteryCard.innerHTML = `
-                <h3>${mystery.title}</h3>
+                <div class="mystery-header">
+                    <h3>${mystery.title}</h3>
+                    <div class="difficulty-badge difficulty-${mystery.difficulty.toLowerCase()}">${mystery.difficulty}</div>
+                </div>
                 <p>${mystery.description}</p>
-                <div class="difficulty difficulty-${mystery.difficulty.toLowerCase()}">${mystery.difficulty}</div>
                 <button class="btn btn-primary" onclick="game.startMystery('${mystery.id}')">
                     Start Investigation
                 </button>

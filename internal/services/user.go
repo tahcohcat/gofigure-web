@@ -75,7 +75,7 @@ func (s *UserService) CreateUser(req *models.CreateUserRequest) (*models.User, e
 
 // AuthenticateUser validates login credentials and returns the user
 func (s *UserService) AuthenticateUser(req *models.LoginRequest) (*models.User, error) {
-	user, err := s.GetUserByUsername(req.Username)
+	user, err := s.GetUserByEmail(req.Email)
 	if err != nil {
 		return nil, fmt.Errorf("invalid credentials")
 	}
@@ -128,6 +128,23 @@ func (s *UserService) GetUserByUsername(username string) (*models.User, error) {
 
 	return &user, nil
 }
+
+// GetUserByEmail retrieves a user by their email
+func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
+	query := `SELECT id, username, email, password_hash, display_name, created_at, updated_at, last_login_at, is_active 
+			  FROM users WHERE email = ?`
+
+	err := s.db.Get(&user, query, email)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("user not found")
+	} else if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	return &user, nil
+}
+
 
 // UsernameExists checks if a username is already taken
 func (s *UserService) UsernameExists(username string) (bool, error) {
