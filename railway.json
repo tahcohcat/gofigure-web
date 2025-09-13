@@ -16,6 +16,7 @@
     }
   },
   "env": {
-    "DATABASE_URL": "sqlite:///data/mydb.sqlite"
+    "GOFIGURE_DATABASE_URL": "/data/gofigure.db",
+    "DATABASE_PATH": "/data/mydb.sqlite"
   }
 }
